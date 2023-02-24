@@ -1,22 +1,18 @@
+[workspace]
+members = [
+  "cr-api",
+  "."
+]
+
 [package]
-name = "crusty-rustacean-api"
+name = "shuttle"
 version = "0.1.0"
-authors = ["Jeffery D. Mitchell", "<sentinel1909@protonmail.com>"]
 edition = "2021"
+publish = false
 
 [lib]
-path = "src/lib/lib.rs"
-
-[[bin]]
-name = "crusty-rustacean-api"
-path = "src/bin/main.rs"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = "0.6.7"
-hyper = "0.14.24"
-tokio = { version = "1.25.0", features = [ "macros", "rt-multi-thread" ]}
-
-[dev-dependencies]
-reqwest = "0.11.14"
+cr-api = { path = "./cr-api" }
+shuttle-service = { version = "0.10.0", features = ["web-axum"] }
+sync_wrapper = "0.1"

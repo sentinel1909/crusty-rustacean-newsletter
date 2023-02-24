@@ -5,8 +5,7 @@ use axum::{
     http::StatusCode,
     response::{Html, IntoResponse},
     routing::{get, IntoMakeService},
-    Server,
-    Router,
+    Router, Server,
 };
 use hyper::server::conn::AddrIncoming;
 use std::net::TcpListener;
