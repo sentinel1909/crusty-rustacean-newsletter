@@ -32,4 +32,12 @@
 - had modified the /health_check endpoint to return an HTML message, instead of a zero length body stated in the book
 - health_check test failed...because the body had a length of 22, not zero...took me a second to see that
 
+## 2023-02-23
+### Steps Completed
+- polished the /health_check endpoint test so that it uses a random port to test on
+### Learning
+- between yesterday and today, I overcame the first major hurdle I had in mind about converting to Axum.
+  - hurdle was understanding how to structure the app so that it could spin up the server as a background task
+  - also understand now how to get the test tasks to spin up a server with a random port
+
 
