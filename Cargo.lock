@@ -201,6 +201,7 @@ dependencies = [
  "axum",
  "hyper",
  "reqwest",
+ "serde",
  "tokio",
 ]
 
