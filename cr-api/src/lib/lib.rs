@@ -2,20 +2,17 @@
 
 // dependcencies
 use axum::{
-    http::StatusCode,
-    response::{Html, IntoResponse},
     routing::{get, IntoMakeService},
     Router, Server,
 };
 use hyper::server::conn::AddrIncoming;
 use std::net::TcpListener;
 
-pub type App = Server<AddrIncoming, IntoMakeService<Router>>;
+use crate::routes::health_check::health_check;
 
-// health_check handler
-async fn health_check() -> impl IntoResponse {
-    (StatusCode::OK, Html(""))
-}
+pub mod routes;
+
+pub type App = Server<AddrIncoming, IntoMakeService<Router>>;
 
 // run function
 pub fn run(listener: TcpListener) -> hyper::Result<App> {

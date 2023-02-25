@@ -13,6 +13,7 @@ publish = false
 [lib]
 
 [dependencies]
+axum = "0.6.8"
 cr-api = { path = "./cr-api" }
 shuttle-service = { version = "0.10.0", features = ["web-axum"] }
 sync_wrapper = "0.1"
