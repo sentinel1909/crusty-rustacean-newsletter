@@ -10,13 +10,13 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v3
         with:
           profile: minimal
           toolchain: 1.67.1
           override: true
-      - uses: actions-rs/cargo@v1
+      - uses: actions-rs/cargo@v3
         with:
           command: test
 
@@ -24,13 +24,13 @@ jobs:
     name: Rustfmt
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v3
         with:
           toolchain: 1.67.1
           override: true
           components: rustfmt
-      - uses: actions-rs/cargo@v1
+      - uses: actions-rs/cargo@v3
         with:
           command: fmt
           args: --all -- --check
@@ -39,13 +39,13 @@ jobs:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v3
         with:
           toolchain: 1.67.1
           override: true
           components: clippy
-      - uses: actions-rs/clippy-check@v1
+      - uses: actions-rs/clippy-check@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: -- -D warnings
@@ -55,10 +55,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@v3
         with:
           toolchain: 1.67.1
           override: true
