@@ -40,4 +40,13 @@
   - hurdle was understanding how to structure the app so that it could spin up the server as a background task
   - also understand now how to get the test tasks to spin up a server with a random port
 
+## 2023-02-24
+### Steps Completed
+- using a sample repo provided by a member of the Shuttle Discord, I was able to refactor my code so that I could build and deploy on Shuttle AND build and deploy on any other service, including running locally
+### Learning
+- huge improvement in understanding gained today, in the following areas:
+  - workspace setup
+  - modules and structing code into modules
+  - how Shuttle can draw from and wrap around the "non-shuttle deployment" code, in order to host on Shuttle
+
 
