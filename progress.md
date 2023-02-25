@@ -46,7 +46,7 @@
 ### Learning
 - huge improvement in understanding gained today, in the following areas:
   - workspace setup
-  - modules and structing code into modules
+  - modules and structuring code into modules
   - how Shuttle can draw from and wrap around the "non-shuttle deployment" code, in order to host on Shuttle
 
 
