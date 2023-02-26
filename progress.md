@@ -49,4 +49,12 @@
   - modules and structuring code into modules
   - how Shuttle can draw from and wrap around the "non-shuttle deployment" code, in order to host on Shuttle
 
+## 2023-02-25
+### Steps Completed
+- implemented the /subscriptions route
+  - went down a rabbit hole because Axum returns a different Status Code (422) when it's form handler fails. Tried to implement something to address this, but couldn't do it.  I hardwired the /health_check test to look for a 422 code instead of 400.  I will return to this before all is said and done.
+- installed the database dependencies, including the sqlx-cli command line tool
+- created the script to spin up a database and do the initial migrations
+- implemented app configuration using the config crate
+
 
