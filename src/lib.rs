@@ -1,10 +1,13 @@
-// lib.rs for shuttle deployment
+//! lib.rs for shuttle deployment
 
+// dependencies
 use axum::{routing::get, Router};
 use sync_wrapper::SyncWrapper;
 
+// pull in the routes from the non-shuttle side of the app
 use cr_api::routes::health_check::health_check;
 
+// shuttle specific startup function
 #[shuttle_service::main]
 async fn axum() -> shuttle_service::ShuttleAxum {
   let router = Router::new().route("/health_check", get(health_check));
