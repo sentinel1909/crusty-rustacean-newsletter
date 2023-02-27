@@ -14,6 +14,7 @@ pub struct SubscriptionData {
     name: String
 }
 
+// subscriptions handler
 pub async fn subscribe(Form(subcription_data): Form<SubscriptionData>) -> StatusCode {
     StatusCode::OK
 }
