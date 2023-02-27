@@ -9,4 +9,4 @@ jobs:
       - run: cargo --version
       - run:
           name: Run Tests
-          command: "cargo test"
+          command: "cd cr-api && cargo test"
