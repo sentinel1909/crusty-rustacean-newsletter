@@ -1,7 +1,7 @@
 [workspace]
 members = [
   "cr-api",
-  "shuttle-build",
+  "project-init",
   "."
 ]
 

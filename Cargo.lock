@@ -1339,6 +1339,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "project-init"
+version = "0.1.0"
+dependencies = [
+ "cmd_lib",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1712,13 +1719,6 @@ dependencies = [
  "cr-api",
  "shuttle-service",
  "sync_wrapper",
-]
-
-[[package]]
-name = "shuttle-build"
-version = "0.1.0"
-dependencies = [
- "cmd_lib",
 ]
 
 [[package]]
