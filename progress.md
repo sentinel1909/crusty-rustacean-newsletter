@@ -57,4 +57,12 @@
 - created the script to spin up a database and do the initial migrations
 - implemented app configuration using the config crate
 
+# 2023-03-01
+### Steps Completed
+- have completed up to 3.8.5.5 in the book, stuck now while I sort out the CI pipeline. Had difficulty with GitHub Actions (they never worked) and so decided to get familar with CircleCI.
+- learned a few more things about workspaces and how to structure them
+- learned about the ```cmd_lib``` crate
+- learned about the ```just``` task runner
+
+
 
