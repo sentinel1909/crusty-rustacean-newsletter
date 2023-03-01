@@ -1,7 +1,12 @@
 [workspace]
 members = [
   "cr-api",
+  "shuttle-build",
   "."
+]
+
+default-members = [
+  "cr-api",
 ]
 
 [package]

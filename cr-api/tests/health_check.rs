@@ -1,7 +1,7 @@
 //! tests/health_check.rs
 
-use sqlx::{PgConnection, Connection};
 use cr_api::configuration::get_configuration;
+use sqlx::{Connection, PgConnection};
 use std::net::TcpListener;
 
 /// Spin up an instance of our application
@@ -73,7 +73,7 @@ async fn subscribe_returns_a_422_when_data_is_missing() {
     let test_cases = vec![
         ("name=le%20guin", "missing the email"),
         ("email=ursula_le_guin%40gmail.com", "missing the name"),
-        ("", "missing both name and email")
+        ("", "missing both name and email"),
     ];
 
     for (invalid_body, error_message) in test_cases {
@@ -92,7 +92,7 @@ async fn subscribe_returns_a_422_when_data_is_missing() {
             response.status().as_u16(),
             // Additional customised error message on test failure
             "The API did not fail with 422 Unprocessable Entity when the payload was {}.",
-             error_message
+            error_message
         );
     }
 }
