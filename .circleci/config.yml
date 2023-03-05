@@ -22,8 +22,8 @@ jobs:
           keys:
             - v1-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}
       - run:
-          name: Print Working Directory
-          command: pwd
+          name: Spin-up and Initialize Database
+          command: /home/circlei/project/scripts/init_db.sh
       - run:
           name: Build all targets
           command: cargo build
