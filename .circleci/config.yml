@@ -22,7 +22,7 @@ jobs:
             - v1-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}
       - run:
           name: Database setup
-          command: ./scripts/init_db.sh
+          command: /scripts/init_db.sh
       - run:
           name: Build all targets
           command: cargo build
