@@ -3,6 +3,7 @@ jobs:
   build-and-test:
     docker:
       - image: cimg/rust:1.67.1
+      - image: cimg/postgres:15.1.0
     environment:
       # Fail the build if there are warnings
       RUSTFLAGS: '-D warnings'
@@ -11,14 +12,9 @@ jobs:
       - run:
           name: Version information
           command: rustc --version; cargo --version; rustup --version
-      # If you have committed your Cargo.lock file to version control
-      # delete this step.
       - run:
-          name: Calculate dependencies
-          command: cargo generate-lockfile
-      - restore_cache:
-          keys:
-            - v1-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}
+          name: Database setup
+          command: ./scripts/init_db.sh
       - run:
           name: Build all targets
           command: cargo build
