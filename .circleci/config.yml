@@ -1,6 +1,7 @@
 version: 2
 jobs:
   build-and-test:
+    working-directory: ~/cr-api
     docker:
       - image: cimg/rust:1.67.1
       - image: cimg/postgres:15.1
@@ -22,7 +23,7 @@ jobs:
             - v1-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}
       - run:
           name: Database setup
-          command: /scripts/init_db.sh
+          command: ../scripts/init_db.sh
       - run:
           name: Build all targets
           command: cargo build
