@@ -6,6 +6,7 @@ use axum::{
     Router, Server,
 };
 use hyper::server::conn::AddrIncoming;
+use sqlx::PgPool;
 use std::net::TcpListener;
 
 use crate::routes::health_check::health_check;
@@ -14,11 +15,12 @@ use crate::routes::subscriptions::subscribe;
 pub type App = Server<AddrIncoming, IntoMakeService<Router>>;
 
 // run function
-pub fn run(listener: TcpListener) -> hyper::Result<App> {
+pub fn run(listener: TcpListener, pool: PgPool) -> hyper::Result<App> {
     // routes and their corresponding handlers
     let app = Router::new()
         .route("/health_check", get(health_check))
-        .route("/subscriptions", post(subscribe));
+        .route("/subscriptions", post(subscribe))
+        .with_state(pool);
     let server = axum::Server::from_tcp(listener)?.serve(app.into_make_service());
     Ok(server)
 }
