@@ -64,5 +64,8 @@
 - learned about the ```cmd_lib``` crate
 - learned about the ```just``` task runner
 
+# 2023-03-06
+### Steps Completed
+- have spent 5 days trying to conquer CircleCI...I gave up.  There's just no good guidance on how to setup Postgres with it.  I returned to GitHub actions and managed to beat it into submission.  I was just having a pathing issue.  Once I ran stuff locally and visualized what was happening, I was able to fix things up.  There are still issues with things failing, but at least I'm 90% there now.
 
 
