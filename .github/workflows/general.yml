@@ -134,6 +134,6 @@ jobs:
           --no-default-features
           --locked
       - name: Migrate database
-        run: SKIP_DOCKER=true ./scripts/init_db.sh
+        run: SKIP_DOCKER=true ./cr-api/scripts/init_db.sh
       - name: Generate code coverage
         run: cargo tarpaulin --verbose --workspace
