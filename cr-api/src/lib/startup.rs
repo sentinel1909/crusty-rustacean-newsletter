@@ -20,7 +20,7 @@ pub fn run(listener: TcpListener, pool: PgPool) -> hyper::Result<App> {
     let app = Router::new()
         .route("/health_check", get(health_check))
         .route("/subscriptions", post(subscribe))
-        .with_state(pool);
+        .with_state(pool.clone());
     let server = axum::Server::from_tcp(listener)?.serve(app.into_make_service());
     Ok(server)
 }

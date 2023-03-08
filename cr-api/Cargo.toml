@@ -15,10 +15,13 @@ path = "src/bin/main.rs"
 
 [dependencies]
 axum = "0.6.7"
+axum-macros = "0.3.5"
+chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
 config = "0.13.3"
 hyper = "0.14.24"
 serde = { version = "1.0.152", features = ["derive"] }
 tokio = { version = "=1.22.0", features = [ "macros", "rt-multi-thread" ]}
+uuid = { version = "1", features = ["v4"] }
 
 [dev-dependencies]
 reqwest = "0.11.14"

@@ -1,18 +1,46 @@
 // subscribe.rs
 
-use axum::{http::StatusCode, Form};
-
+use axum::{
+    http::StatusCode,
+    extract::State,
+    response::IntoResponse,
+    Form
+};
+use axum_macros::debug_handler;
+use chrono::Utc;
 use serde::Deserialize;
+use sqlx::PgPool;
+use uuid::Uuid;
 
 // data structure to model the incoming form data from the subscribe route, will remove dead_code annotation in the future
 #[derive(Deserialize)]
-#[allow(dead_code)]
 pub struct SubscriptionData {
     email: String,
     name: String,
 }
 
 // subscriptions handler, for now the form paramater is not used and is marked as such
-pub async fn subscribe(Form(_subcription_data): Form<SubscriptionData>) -> StatusCode {
-    StatusCode::OK
+#[debug_handler]
+pub async fn subscribe(State(pool): State<PgPool>, Form(subscription_data): Form<SubscriptionData>)  -> impl IntoResponse {
+    match sqlx::query!(
+        r#"
+        INSERT INTO subscriptions (id, email, name, subscribed_at)
+        VALUES ($1, $2, $3, $4)
+        "#,
+        Uuid::new_v4(),
+        subscription_data.email,
+        subscription_data.name,
+        Utc::now()
+    )
+    .execute(&pool)
+    .await
+    {
+        Ok(_) => StatusCode::OK,
+        Err(e) => {
+            println!("Failed to execute query: {}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        }
+    }
+
+    
 }
