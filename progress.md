@@ -70,7 +70,8 @@
 
 # 2023-03-07
 ### Steps Completed
-- started fleshing out /subscriptions route so that it could insert data into the database
-- configured a database connection pool
+- finished Chapter 3
+- /subscriptions route and all tests are working
+- the shuttle deployed side of this project needs it's database, will figure that out before I go further in the book
 
 
