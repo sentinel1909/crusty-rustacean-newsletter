@@ -1685,10 +1685,7 @@ name = "shuttle"
 version = "0.1.0"
 dependencies = [
  "axum",
- "cr-api",
  "shuttle-service",
- "shuttle-shared-db",
- "sqlx",
  "sync_wrapper",
 ]
 
@@ -1745,18 +1742,6 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "uuid",
-]
-
-[[package]]
-name = "shuttle-shared-db"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76a769800072b3ad3c16f5492def2761dde7893b5dfc75195e2620ead29609ee"
-dependencies = [
- "async-trait",
- "shuttle-service",
- "sqlx",
- "tokio",
 ]
 
 [[package]]
