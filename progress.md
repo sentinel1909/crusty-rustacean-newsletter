@@ -74,4 +74,11 @@
 - /subscriptions route and all tests are working
 - the shuttle deployed side of this project needs it's database, will figure that out before I go further in the book
 
+# 2023-03-08
+### Steps Completed
+- took a break from progress in the book
+- worked on understanding how to spin up a Postgres database on Shuttle
+- have got it working, but can't rely on the routes I've written for the non-Shuttle version of the project
+- when I include the non-Shuttle version of the code as a dependency, compilation fails
+
 

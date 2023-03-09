@@ -1,18 +1,34 @@
 //! lib.rs for shuttle deployment
 
 // dependencies
-use axum::{routing::get, Router};
+use axum::{
+    routing::get,
+    Router,
+};
 use shuttle_service::error::CustomError;
 use sqlx::PgPool;
 use sync_wrapper::SyncWrapper;
 
-// pull in routes from the cr_api_local crate
-use cr_api_local::routes::health_check::health_check;
+// use routes from the cr-api-local version of the project
+// use cr_api_local::routes::health_check::health_check;
+// use cr_api_local::routes::subscriptions::subscribe;
+
+async fn health_check() -> &'static str {
+    "200: OK"
+}
 
 // shuttle specific startup function
 #[shuttle_service::main]
-async fn axum(#[shuttle_shared_db::Postgres] _pool: PgPool) -> shuttle_service::ShuttleAxum {
-    let router = Router::new().route("/health_check", get(health_check));
+async fn axum(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_service::ShuttleAxum {
+    sqlx::migrate!("./cr-api-local/migrations")
+        .run(&pool)
+        .await
+        .map_err(CustomError::new)?;
+    
+    let router = Router::new()
+        .route("/health_check", get(health_check))
+        // .route("/subscriptions", post(subscribe))
+        .with_state(pool);
 
     let sync_wrapper = SyncWrapper::new(router);
 
