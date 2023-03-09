@@ -1,11 +1,6 @@
 // subscribe.rs
 
-use axum::{
-    http::StatusCode,
-    extract::State,
-    response::IntoResponse,
-    Form
-};
+use axum::{extract::State, http::StatusCode, response::IntoResponse, Form};
 use axum_macros::debug_handler;
 use chrono::Utc;
 use serde::Deserialize;
@@ -21,7 +16,10 @@ pub struct SubscriptionData {
 
 // subscriptions handler, for now the form paramater is not used and is marked as such
 #[debug_handler]
-pub async fn subscribe(State(pool): State<PgPool>, Form(subscription_data): Form<SubscriptionData>)  -> impl IntoResponse {
+pub async fn subscribe(
+    State(pool): State<PgPool>,
+    Form(subscription_data): Form<SubscriptionData>,
+) -> impl IntoResponse {
     match sqlx::query!(
         r#"
         INSERT INTO subscriptions (id, email, name, subscribed_at)
@@ -41,6 +39,4 @@ pub async fn subscribe(State(pool): State<PgPool>, Form(subscription_data): Form
             StatusCode::INTERNAL_SERVER_ERROR
         }
     }
-
-    
 }
