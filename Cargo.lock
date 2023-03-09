@@ -317,6 +317,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "cr-api-shuttle"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "cr-api-local",
+ "shuttle-service",
+ "shuttle-shared-db",
+ "sqlx",
+ "sync_wrapper",
+]
+
+[[package]]
 name = "crc"
 version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1678,17 +1690,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "900fba806f70c630b0a382d0d825e17a0f19fcd059a2ade1ff237bcddf446b31"
 dependencies = [
  "lazy_static",
-]
-
-[[package]]
-name = "shuttle"
-version = "0.1.0"
-dependencies = [
- "axum",
- "shuttle-service",
- "shuttle-shared-db",
- "sqlx",
- "sync_wrapper",
 ]
 
 [[package]]
