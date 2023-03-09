@@ -6,7 +6,7 @@ members = [
 ]
 
 default-members = [
-  "cr-api",
+  ".",
 ]
 
 [package]
