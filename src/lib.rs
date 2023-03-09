@@ -17,15 +17,9 @@ use cr_api::routes::subscriptions::subscribe;
 #[shuttle_service::main]
 async fn axum(
     #[shuttle_shared_db::Postgres] pool: PgPool,
-) -> shuttle_service::ShuttleAxum {
-    pool.execute(include_str!("../schema.sql"))
-        .await
-        .map_err(CustomError::new)?;
-    
+) -> ShuttleAxum {
     let router = Router::new()
-        .route("/health_check", get(health_check))
-        .route("/subscriptions", post(subscribe))
-        .with_state(pool);
+        .route("/health_check", get(health_check));
     
     let sync_wrapper = SyncWrapper::new(router);
 
