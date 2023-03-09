@@ -301,7 +301,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "cr-api"
+name = "cr-api-local"
 version = "0.1.0"
 dependencies = [
  "axum",

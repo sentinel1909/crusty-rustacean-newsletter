@@ -11,7 +11,7 @@ async fn hello_world() -> &'static str {
 
 // shuttle specific startup function
 #[shuttle_service::main]
-async fn axum(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_service::ShuttleAxum {
+async fn axum(#[shuttle_shared_db::Postgres] _pool: PgPool) -> shuttle_service::ShuttleAxum {
     let router = Router::new().route("/hello", get(hello_world));
 
     let sync_wrapper = SyncWrapper::new(router);

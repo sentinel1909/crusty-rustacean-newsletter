@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "cr-api",
+  "cr-api-local",
   "project-init",
   "."
 ]

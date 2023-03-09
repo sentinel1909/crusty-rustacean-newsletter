@@ -1,7 +1,7 @@
 //! tests/health_check.rs
 
-use cr_api::configuration::{get_configuration, DatabaseSettings};
-use cr_api::startup::run;
+use cr_api_local::configuration::{get_configuration, DatabaseSettings};
+use cr_api_local::startup::run;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::net::TcpListener;
 use uuid::Uuid;
