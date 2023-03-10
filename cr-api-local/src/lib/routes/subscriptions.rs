@@ -1,9 +1,9 @@
 // subscribe.rs
 
 use axum::{
-    extract::{State, Form},
+    extract::{Form, State},
     http::StatusCode,
-    response::IntoResponse
+    response::IntoResponse,
 };
 use axum_macros::debug_handler;
 use chrono::Utc;
