@@ -1,4 +1,4 @@
-init:
+init-db:
   cargo run -p project-init
 
 status:
