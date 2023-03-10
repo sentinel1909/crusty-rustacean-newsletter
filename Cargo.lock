@@ -321,6 +321,7 @@ name = "cr-api-shuttle"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "cr-api-local",
  "shuttle-service",
  "shuttle-shared-db",
  "sqlx",

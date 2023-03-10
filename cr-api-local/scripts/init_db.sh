@@ -2,7 +2,7 @@
 set -x
 set -eo pipefail
 
-cd cr-api
+cd cr-api-local
 
 if ! [ -x "$(command -v psql)" ]; then
   echo >&2 "Error: psql is not installed."
