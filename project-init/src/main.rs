@@ -8,6 +8,7 @@ fn main() -> CmdResult {
     run_cmd!(./cr-api-local/scripts/init_db.sh)?;
     let test_msg = "Running tests...";
     run_cmd!(echo $test_msg)?;
+    run_cmd!(cd cr-api-local)?;
     run_cmd!(cargo test)?;
     Ok(())
 }

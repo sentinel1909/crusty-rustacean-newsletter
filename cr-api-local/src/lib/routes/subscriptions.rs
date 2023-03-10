@@ -1,6 +1,10 @@
 // subscribe.rs
 
-use axum::{extract::State, http::StatusCode, response::IntoResponse, Form};
+use axum::{
+    extract::{State, Form},
+    http::StatusCode,
+    response::IntoResponse
+};
 use axum_macros::debug_handler;
 use chrono::Utc;
 use serde::Deserialize;
