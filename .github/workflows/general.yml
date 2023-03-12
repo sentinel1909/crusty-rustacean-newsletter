@@ -47,7 +47,7 @@ jobs:
       - name: Migrate database
         run: |
           sudo apt-get install libpq-dev -y
-          SKIP_DOCKER=true ./cr-api/scripts/init_db.sh
+          SKIP_DOCKER=true ./cr-api-local/scripts/init_db.sh
       - name: Check sqlx-data.json is up-to-date
         run: |
           cargo sqlx prepare --check -- --bin cr_api
@@ -95,7 +95,7 @@ jobs:
       - name: Migrate database
         run: |
           sudo apt-get install libpq-dev -y
-          SKIP_DOCKER=true ./cr-api/scripts/init_db.sh
+          SKIP_DOCKER=true ./cr-api-local/scripts/init_db.sh
       - name: Linting
         run: cargo clippy -- -D warnings
 
@@ -134,6 +134,6 @@ jobs:
           --no-default-features
           --locked
       - name: Migrate database
-        run: SKIP_DOCKER=true ./cr-api/scripts/init_db.sh
+        run: SKIP_DOCKER=true ./cr-api-local/scripts/init_db.sh
       - name: Generate code coverage
         run: cargo tarpaulin --verbose --workspace
