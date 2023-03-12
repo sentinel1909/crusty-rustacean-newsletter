@@ -81,4 +81,9 @@
 - have got it working, but can't rely on the routes I've written for the non-Shuttle version of the project
 - when I include the non-Shuttle version of the code as a dependency, compilation fails
 
+# 2023-03-11
+### Steps Completed
+- figured out why the shuttle code wouldn't compile, thanks to the folks at Shuttle, they reminded me to read the relevant parts of Chapter 5 in Zero to Production, one must set sqlx to function offline
+- completed a portion of the telemetry section of Chapter 4, began to instrument the code base
+
 
