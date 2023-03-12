@@ -1,18 +1,26 @@
+# justfile commands for crusty-rustacean-api
+
 init-db:
   cargo run -p project-init
 
-status:
+build-local:
+  cargo build -p cr-api-local
+
+test-local:
+  cargo test -p cr-api-local
+
+sh-status:
   cargo shuttle project status
 
-new:
+sh-new:
   cargo shuttle project new
 
-delete:
+sh-delete:
   cargo shuttle project rm
 
-run-local:
+sh-run-local:
   cargo shuttle run
 
-run-remote:
+sh-run-remote:
   cargo shuttle deploy
 
