@@ -86,4 +86,8 @@
 - figured out why the shuttle code wouldn't compile, thanks to the folks at Shuttle, they reminded me to read the relevant parts of Chapter 5 in Zero to Production, one must set sqlx to function offline
 - completed a portion of the telemetry section of Chapter 4, began to instrument the code base
 
+# 2023-03-12
+### Steps Completed
+- completed instrumenting up to request_id, need to figure out how to make this work in Axum
+
 

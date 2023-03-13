@@ -2,41 +2,23 @@
 
 use cr_api_local::configuration::get_configuration;
 use cr_api_local::startup::run;
+use cr_api_local::telemetry::{get_subscriber, init_subscriber};
+use secrecy::ExposeSecret;
 use sqlx::postgres::PgPoolOptions;
 use std::net::TcpListener;
-use tracing::subscriber::set_global_default;
-use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
-use tracing_log::LogTracer;
-use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry};
 
 #[tokio::main]
 async fn main() -> hyper::Result<()> {
-    // Redirect logs to subscriber
-    LogTracer::init().expect("Failed to set logger");
-    
-    // Initialize tracing
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new("info"));
-    let formatting_layer = BunyanFormattingLayer::new(
-        "cr-api".into(),
-        std::io::stdout
-    );
-
-    let subscriber = Registry::default()
-        .with(env_filter)
-        .with(JsonStorageLayer)
-        .with(formatting_layer);
-
-    set_global_default(subscriber).expect("Failed to set subscriber");
+    let subscriber = get_subscriber("cr-api".into(), "info".into(), std::io::stdout);
+    init_subscriber(subscriber);
 
     // Panic if we can't read configuration
     let configuration = get_configuration().expect("Failed to read configuration.");
 
-    // setup the database connection pool
-    let db_connection_str = configuration.database.connection_string().to_string();
+    // setup the database connection pool;
     let db_pool = match PgPoolOptions::new()
         .max_connections(5)
-        .connect(&db_connection_str)
+        .connect(configuration.database.connection_string().expose_secret())
         .await
     {
         Ok(pool) => pool,

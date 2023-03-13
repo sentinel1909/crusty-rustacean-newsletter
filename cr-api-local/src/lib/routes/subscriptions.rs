@@ -5,11 +5,9 @@ use axum::{
     http::StatusCode,
     response::IntoResponse,
 };
-use axum_macros::debug_handler;
 use chrono::Utc;
 use serde::Deserialize;
 use sqlx::PgPool;
-use tracing::Instrument;
 use uuid::Uuid;
 
 // data structure to model the incoming form data from the subscribe route, will remove dead_code annotation in the future
@@ -19,29 +17,17 @@ pub struct SubscriptionData {
     name: String,
 }
 
-// subscriptions handler, for now the form paramater is not used and is marked as such
-#[debug_handler]
-pub async fn subscribe(
+#[tracing::instrument(
+    name = "Saving new subscriber details in the database",
+    skip(subscription_data, pool)
+)]
+pub async fn insert_subscriber(
     State(pool): State<PgPool>,
     Form(subscription_data): Form<SubscriptionData>,
-) -> impl IntoResponse {
-    let request_id = Uuid::new_v4();
-    let request_span = tracing::info_span!(
-        "Adding a new subscriber...",
-        %request_id,
-        subscriber_email = %subscription_data.email,
-        subscriber_name = %subscription_data.name
-    );
-
-    let _request_span_guard = request_span.enter();
-
-    let query_span = tracing::info_span!(
-        "Saving new subscriber into the database..."
-    );
-    match sqlx::query!(
+) -> hyper::Result<()> {
+     let _ = sqlx::query!(
         r#"
-        INSERT INTO subscriptions (id, email, name, subscribed_at)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO subscriptions (id, email, name, subscribed_at) VALUES ($1, $2, $3, $4)
         "#,
         Uuid::new_v4(),
         subscription_data.email,
@@ -49,23 +35,29 @@ pub async fn subscribe(
         Utc::now()
     )
     .execute(&pool)
-    .instrument(query_span)
     .await
+    .map_err(|e| {
+        tracing::error!("Failed to execute query: {:?}", e);
+    });
+    Ok(())
+}
+
+#[tracing::instrument(
+    name = "Adding a new subscriber",
+    skip(subscription_data, pool),
+    fields(
+        request_id = %Uuid::new_v4(),
+        subscriber_email = %subscription_data.email,
+        subscriber_name = %subscription_data.name
+    )
+)]
+pub async fn subscribe(
+    pool: State<PgPool>,
+    subscription_data: Form<SubscriptionData>,
+) -> impl IntoResponse {
+    match insert_subscriber(pool, subscription_data).await
     {
-        Ok(_) => { 
-            tracing::info!(
-                "request_id {} - Saving new subscriber details in the database",
-                request_id
-            );
-            StatusCode::OK
-        },
-        Err(e) => {
-            tracing::error!(
-                "request_id {} - Failed to execute query: {:?}",
-                request_id,
-                e
-            );
-            StatusCode::INTERNAL_SERVER_ERROR
-        }
-    }
+        Ok(_) => StatusCode::OK,
+        Err(_) => StatusCode::INTERNAL_SERVER_ERROR
+    }    
 }
