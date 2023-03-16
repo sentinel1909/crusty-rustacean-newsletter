@@ -90,4 +90,9 @@
 ### Steps Completed
 - completed instrumenting up to request_id, need to figure out how to make this work in Axum
 
+# 2023-03-12
+### Steps Completed
+- fumbled my way through implementation at the end of Chapter 4
+- getting a level of instrumentation which appears "good enough", with the same request_id attached to the different actions, going to move on
+
 

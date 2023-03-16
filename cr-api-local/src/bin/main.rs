@@ -9,9 +9,11 @@ use std::net::TcpListener;
 
 #[tokio::main]
 async fn main() -> hyper::Result<()> {
+    
+    // initialize tracing
     let subscriber = get_subscriber("cr-api".into(), "info".into(), std::io::stdout);
     init_subscriber(subscriber);
-
+    
     // Panic if we can't read configuration
     let configuration = get_configuration().expect("Failed to read configuration.");
 
