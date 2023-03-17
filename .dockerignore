@@ -1,0 +1,6 @@
+cr-api/.env
+target/
+cr-api/tests
+cr-api/Dockerfile
+cr-api/scripts
+cr-api/migrations

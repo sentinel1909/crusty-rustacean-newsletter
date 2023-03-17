@@ -25,7 +25,7 @@ pub async fn insert_subscriber(
     State(pool): State<PgPool>,
     Form(subscription_data): Form<SubscriptionData>,
 ) -> hyper::Result<()> {
-     let _ = sqlx::query!(
+    let _ = sqlx::query!(
         r#"
         INSERT INTO subscriptions (id, email, name, subscribed_at) VALUES ($1, $2, $3, $4)
         "#,
@@ -54,9 +54,8 @@ pub async fn subscribe(
     pool: State<PgPool>,
     subscription_data: Form<SubscriptionData>,
 ) -> impl IntoResponse {
-    match insert_subscriber(pool, subscription_data).await
-    {
+    match insert_subscriber(pool, subscription_data).await {
         Ok(_) => StatusCode::OK,
-        Err(_) => StatusCode::INTERNAL_SERVER_ERROR
-    }    
+        Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
+    }
 }

@@ -1,25 +1,24 @@
 //! src/lib/startup.rs
 
 // dependcencies, external and internal
-use axum::{
-    routing::{get, post, IntoMakeService},
-    http::Request,
-    Router, Server,
-};
 use crate::routes::health_check::health_check;
 use crate::routes::subscriptions::subscribe;
+use axum::{
+    http::Request,
+    routing::{get, post, IntoMakeService},
+    Router, Server,
+};
 use hyper::server::conn::AddrIncoming;
 use sqlx::PgPool;
 use std::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::{
-    ServiceBuilderExt,
     request_id::{MakeRequestId, RequestId},
     trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
+    ServiceBuilderExt,
 };
 use tracing::Level;
 use uuid::Uuid;
-
 
 pub type App = Server<AddrIncoming, IntoMakeService<Router>>;
 
@@ -31,7 +30,7 @@ impl MakeRequestId for MakeRequestUuid {
         let request_id = Uuid::new_v4().to_string();
 
         Some(RequestId::new(request_id.parse().unwrap()))
-    } 
+    }
 }
 
 // run function
@@ -47,8 +46,8 @@ pub fn run(listener: TcpListener, pool: PgPool) -> hyper::Result<App> {
                     TraceLayer::new_for_http()
                         .make_span_with(
                             DefaultMakeSpan::new()
-                            .include_headers(true)
-                            .level(Level::INFO)
+                                .include_headers(true)
+                                .level(Level::INFO),
                         )
                         .on_response(DefaultOnResponse::new().include_headers(true)),
                 )
