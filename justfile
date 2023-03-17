@@ -3,8 +3,11 @@
 init-db:
   cargo run -p project-init
 
+run-local:
+  cd cr-api && cargo run
+
 build-dkr:
-  cargo build -p cr-api
+  docker build --tag cr-api-docker --file Dockerfile .
 
 test-dkr:
   cargo test -p cr-api
