@@ -1,5 +1,5 @@
 [package]
-name = "cr-api"
+name = "cr-api-docker"
 version = "0.1.0"
 authors = ["Jeffery D. Mitchell", "<sentinel1909@protonmail.com>"]
 edition = "2021"
@@ -8,7 +8,7 @@ edition = "2021"
 path = "src/lib/lib.rs"
 
 [[bin]]
-name = "cr_api"
+name = "cr_api_docker"
 path = "src/bin/main.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

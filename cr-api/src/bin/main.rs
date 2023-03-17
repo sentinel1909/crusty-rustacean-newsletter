@@ -1,8 +1,8 @@
 // main.rs
 
-use cr_api::configuration::get_configuration;
-use cr_api::startup::run;
-use cr_api::telemetry::{get_subscriber, init_subscriber};
+use cr_api_docker::configuration::get_configuration;
+use cr_api_docker::startup::run;
+use cr_api_docker::telemetry::{get_subscriber, init_subscriber};
 use secrecy::ExposeSecret;
 use sqlx::postgres::PgPoolOptions;
 use std::net::TcpListener;

@@ -11,7 +11,7 @@ use sync_wrapper::SyncWrapper;
 use tracing::info;
 
 // use routes from the cr-api-local version of the project
-use cr_api::routes::*;
+use cr_api_docker::routes::*;
 
 // start up the app using the shuttle service
 #[shuttle_service::main]

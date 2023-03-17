@@ -322,7 +322,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "cr-api"
+name = "cr-api-docker"
 version = "0.1.0"
 dependencies = [
  "axum",
@@ -347,11 +347,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "cr-api-2023"
+name = "cr-api-shuttle"
 version = "0.1.0"
 dependencies = [
  "axum",
- "cr-api",
+ "cr-api-docker",
  "shuttle-service",
  "shuttle-shared-db",
  "sqlx",

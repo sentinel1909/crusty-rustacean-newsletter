@@ -1,5 +1,5 @@
 [package]
-name = "cr-api-2023"
+name = "cr-api-shuttle"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -19,7 +19,7 @@ default-members = [
 
 [dependencies]
 axum = "0.6.8"
-cr-api = { path = "cr-api" }
+cr-api-docker = { path = "cr-api" }
 shuttle-service = { version = "0.11.0", features = ["web-axum"] }
 shuttle-shared-db = { version = "0.11.0", features = ["postgres"] }
 sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "postgres"] }
