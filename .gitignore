@@ -1,4 +1,4 @@
 # gitignore for repo crusty-rustacean-api
 
 /target
-/cr-api-local/target
+/cr-api/target

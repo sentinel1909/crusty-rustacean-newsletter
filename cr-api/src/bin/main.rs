@@ -1,8 +1,8 @@
 // main.rs
 
-use cr_api_local::configuration::get_configuration;
-use cr_api_local::startup::run;
-use cr_api_local::telemetry::{get_subscriber, init_subscriber};
+use cr_api::configuration::get_configuration;
+use cr_api::startup::run;
+use cr_api::telemetry::{get_subscriber, init_subscriber};
 use secrecy::ExposeSecret;
 use sqlx::postgres::PgPoolOptions;
 use std::net::TcpListener;

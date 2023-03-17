@@ -3,11 +3,11 @@
 init-db:
   cargo run -p project-init
 
-build-local:
-  cargo build -p cr-api-local
+build-dkr:
+  cargo build -p cr-api
 
-test-local:
-  cargo test -p cr-api-local
+test-dkr:
+  cargo test -p cr-api
 
 sh-status:
   cargo shuttle project status

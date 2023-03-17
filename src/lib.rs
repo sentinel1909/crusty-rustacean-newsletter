@@ -11,13 +11,13 @@ use sync_wrapper::SyncWrapper;
 use tracing::info;
 
 // use routes from the cr-api-local version of the project
-use cr_api_local::routes::*;
+use cr_api::routes::*;
 
 // start up the app using the shuttle service
 #[shuttle_service::main]
 async fn axum(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_service::ShuttleAxum {
     info!("Running database migration...");
-    sqlx::migrate!("./cr-api-local/migrations")
+    sqlx::migrate!("./cr-api/migrations")
         .run(&pool)
         .await
         .map_err(CustomError::new)?;

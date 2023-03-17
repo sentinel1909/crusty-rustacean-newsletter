@@ -1,5 +1,5 @@
 [package]
-name = "cr-api-local"
+name = "cr-api"
 version = "0.1.0"
 authors = ["Jeffery D. Mitchell", "<sentinel1909@protonmail.com>"]
 edition = "2021"
@@ -8,7 +8,7 @@ edition = "2021"
 path = "src/lib/lib.rs"
 
 [[bin]]
-name = "cr_api_local"
+name = "cr_api"
 path = "src/bin/main.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -16,7 +16,6 @@ path = "src/bin/main.rs"
 [dependencies]
 axum = { version = "0.6.7", features = [ "form" ] }
 axum-macros = "0.3.5"
-axum-tracing-opentelemetry = { version = "0.10.0", features = [ "otlp", "tracing_subscriber_ext" ] }
 chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
 config = "0.13.3"
 env_logger = "0.10.0" 
@@ -25,7 +24,8 @@ once_cell = "1.17.1"
 secrecy = { version = "0.8", features = [ "serde"] }
 serde = { version = "1.0.152", features = ["derive"] }
 tokio = { version = "=1.22.0", features = [ "macros", "rt-multi-thread" ]}
-tower-http = { version = "0.4.0", features = [ "trace", "request-id" ] }
+tower = "0.4.13"
+tower-http = { version = "0.4.0", features = [ "trace", "request-id", "util" ] }
 tracing = { version = "0.1.37", features = [ "log" ] }
 tracing-bunyan-formatter = "0.3.6"
 tracing-log = "0.1.3"

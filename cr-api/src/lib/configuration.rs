@@ -39,7 +39,7 @@ impl DatabaseSettings {
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     // Initialize our configuration reader
     let settings = config::Config::builder()
-        // Add configuration values form a file name `configuration.yaml`
+        // Add configuration values from a file name `configuration.yaml`
         .add_source(config::File::new(
             "configuration.yaml",
             config::FileFormat::Yaml,

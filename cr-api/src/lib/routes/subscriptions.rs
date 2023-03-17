@@ -46,7 +46,6 @@ pub async fn insert_subscriber(
     name = "Adding a new subscriber",
     skip(subscription_data, pool),
     fields(
-        request_id = %Uuid::new_v4(),
         subscriber_email = %subscription_data.email,
         subscriber_name = %subscription_data.name
     )
