@@ -95,4 +95,9 @@
 - fumbled my way through implementation at the end of Chapter 4
 - getting a level of instrumentation which appears "good enough", with the same request_id attached to the different actions, going to move on
 
+# 2023-03-16
+### Steps Completed
+- circled back to the last steps in Chapter 4 and begged, borrowed and stole from [this repo](https://github.com/SaadiSave/zero2prod) to implement my telemetry
+- started back into Chapter 5, intially had pathing problems because of how I structured the repo.  Sorted it all out and built the Docker image in preparation for deployment.
+
 
