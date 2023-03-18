@@ -63,7 +63,7 @@ jobs:
         with:
           components: rustfmt
       - name: Enforce formatting
-        run: cargo fmt --check
+        run: cd cr-api && cargo fmt --check
 
   clippy:
     name: Clippy
@@ -97,7 +97,7 @@ jobs:
           sudo apt-get install libpq-dev -y
           SKIP_DOCKER=true ./cr-api/scripts/init_db.sh
       - name: Linting
-        run: cargo clippy -- -D warnings
+        run: cd cr-api && cargo clippy -- -D warnings
 
   coverage:
     name: Code coverage
