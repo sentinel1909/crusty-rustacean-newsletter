@@ -1,6 +1,6 @@
 // subscribe.rs
 
-use crate::domain::{NewSubscriber, SubscriberName};
+use crate::domain::{NewSubscriber, SubscriberEmail, SubscriberName};
 use axum::{
     extract::{Form, State},
     http::StatusCode,
@@ -31,7 +31,7 @@ pub async fn insert_subscriber(
         INSERT INTO subscriptions (id, email, name, subscribed_at) VALUES ($1, $2, $3, $4)
         "#,
         Uuid::new_v4(),
-        new_subscriber.email,
+        new_subscriber.email.as_ref(),
         new_subscriber.name.as_ref(),
         Utc::now()
     )
@@ -41,6 +41,16 @@ pub async fn insert_subscriber(
         tracing::error!("Failed to execute query: {:?}", e);
     });
     Ok(())
+}
+
+impl TryFrom<Form<SubscriptionData>> for NewSubscriber {
+    type Error = String;
+
+    fn try_from(value: Form<SubscriptionData>) -> Result<Self, Self::Error> {
+        let name = SubscriberName::parse(value.0.name)?;
+        let email = SubscriberEmail::parse(value.0.email)?;
+        Ok(NewSubscriber { email, name })
+    }
 }
 
 #[tracing::instrument(
@@ -55,13 +65,9 @@ pub async fn subscribe(
     pool: State<PgPool>,
     subscription_data: Form<SubscriptionData>,
 ) -> impl IntoResponse {
-    let name = match SubscriberName::parse(subscription_data.0.name) {
-        Ok(name) => name,
+    let new_subscriber = match subscription_data.try_into() {
+        Ok(subscription_data) => subscription_data,
         Err(_) => return StatusCode::BAD_REQUEST,
-    };
-    let new_subscriber = NewSubscriber {
-        email: subscription_data.0.email,
-        name,
     };
     match insert_subscriber(pool, &new_subscriber).await {
         Ok(_) => StatusCode::OK,
