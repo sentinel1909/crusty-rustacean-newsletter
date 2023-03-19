@@ -100,4 +100,8 @@
 - circled back to the last steps in Chapter 4 and begged, borrowed and stole from [this repo](https://github.com/SaadiSave/zero2prod) to implement my telemetry
 - started back into Chapter 5, intially had pathing problems because of how I structured the repo.  Sorted it all out and built the Docker image in preparation for deployment.
 
+# 2023-03-18
+### Steps Completed
+- finished Chapter 5, api is deployed to Digital Ocean and everything appears to be working as expected
+
 

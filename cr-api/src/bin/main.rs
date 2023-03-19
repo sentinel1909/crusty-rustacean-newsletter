@@ -19,7 +19,7 @@ async fn main() -> hyper::Result<()> {
     let connection_pool = PgPoolOptions::new()
         .max_connections(5)
         .acquire_timeout(std::time::Duration::from_secs(2))
-        .connect_lazy_with(configuration.database.with_db());    
+        .connect_lazy_with(configuration.database.with_db());
 
     // Construct an address and port, get the port from the configuration settings
     // pass the listener to the run function, which spins up the API
@@ -31,5 +31,5 @@ async fn main() -> hyper::Result<()> {
         Ok(listen) => listen,
         Err(err) => panic!("Could not get a valid address and port. {:?}", err),
     };
-    run(listener,connection_pool)?.await
+    run(listener, connection_pool)?.await
 }
