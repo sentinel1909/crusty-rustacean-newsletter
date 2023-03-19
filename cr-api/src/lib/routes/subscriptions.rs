@@ -1,5 +1,6 @@
 // subscribe.rs
 
+use crate::domain::{NewSubscriber, SubscriberName};
 use axum::{
     extract::{Form, State},
     http::StatusCode,
@@ -19,19 +20,19 @@ pub struct SubscriptionData {
 
 #[tracing::instrument(
     name = "Saving new subscriber details in the database",
-    skip(subscription_data, pool)
+    skip(new_subscriber, pool)
 )]
 pub async fn insert_subscriber(
     State(pool): State<PgPool>,
-    Form(subscription_data): Form<SubscriptionData>,
-) -> hyper::Result<()> {
+    new_subscriber: &NewSubscriber,
+) -> Result<(), sqlx::Error> {
     let _ = sqlx::query!(
         r#"
         INSERT INTO subscriptions (id, email, name, subscribed_at) VALUES ($1, $2, $3, $4)
         "#,
         Uuid::new_v4(),
-        subscription_data.email,
-        subscription_data.name,
+        new_subscriber.email,
+        new_subscriber.name.as_ref(),
         Utc::now()
     )
     .execute(&pool)
@@ -54,7 +55,11 @@ pub async fn subscribe(
     pool: State<PgPool>,
     subscription_data: Form<SubscriptionData>,
 ) -> impl IntoResponse {
-    match insert_subscriber(pool, subscription_data).await {
+    let new_subscriber = NewSubscriber {
+        email: subscription_data.0.email,
+        name: SubscriberName::parse(subscription_data.0.name),
+    };
+    match insert_subscriber(pool, &new_subscriber).await {
         Ok(_) => StatusCode::OK,
         Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
     }
