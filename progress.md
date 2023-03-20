@@ -102,6 +102,10 @@
 
 # 2023-03-18
 ### Steps Completed
-- finished Chapter 5, api is deployed to Digital Ocean and everything appears to be working as expected
+- finished Chapter 5, API is deployed to Digital Ocean and everything appears to be working as expected
+
+# 2023-03-19
+### Steps Completed
+- finished Chapter 6, completed input validation for name and email fields, re-deployment to Digital Ocean successful.
 
 
