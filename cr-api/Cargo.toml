@@ -3,6 +3,12 @@ name = "cr-api-docker"
 version = "0.1.0"
 authors = ["Jeffery D. Mitchell", "<sentinel1909@protonmail.com>"]
 edition = "2021"
+description = "API for the Crusty Rustacean Blog"
+readme = "README.md"
+repository = "https://github.com/sentinel1909/crusty-rustacean-api"
+license = "MIT"
+keywords = ["axum, shuttle"]
+categories = ["api"]
 
 [lib]
 path = "src/lib/lib.rs"
@@ -24,7 +30,7 @@ once_cell = "1.17.1"
 secrecy = { version = "0.8", features = [ "serde"] }
 serde = { version = "1.0.152", features = ["derive"] }
 serde-aux = "4.1.2"
-tokio = { version = "=1.22.0", features = [ "macros", "rt-multi-thread" ]}
+tokio = { version = "1.26.0", features = [ "macros", "rt-multi-thread" ]}
 tower = "0.4.13"
 tower-http = { version = "0.4.0", features = [ "trace", "request-id", "util" ] }
 tracing = { version = "0.1.37", features = [ "log" ] }
