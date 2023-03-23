@@ -1,6 +1,7 @@
 //! src/lib/startup.rs
 
 // dependcencies, external and internal
+use crate::email_client::EmailClient;
 use crate::routes::health_check::health_check;
 use crate::routes::subscriptions::subscribe;
 use axum::{
@@ -34,7 +35,7 @@ impl MakeRequestId for MakeRequestUuid {
 }
 
 // run function
-pub fn run(listener: TcpListener, pool: PgPool) -> hyper::Result<App> {
+pub fn run(listener: TcpListener, pool: PgPool, email_client: EmailClient) -> hyper::Result<App> {
     // routes and their corresponding handlers
     let app = Router::new()
         .route("/health_check", get(health_check))
@@ -53,7 +54,8 @@ pub fn run(listener: TcpListener, pool: PgPool) -> hyper::Result<App> {
                 )
                 .propagate_x_request_id(),
         )
-        .with_state(pool);
+        .with_state(pool)
+        .with_state(email_client.clone());
     let server = axum::Server::from_tcp(listener)?.serve(app.into_make_service());
     Ok(server)
 }

@@ -108,4 +108,9 @@
 ### Steps Completed
 - finished Chapter 6, completed input validation for name and email fields, re-deployment to Digital Ocean successful.
 
+# 2023-03-22
+### Steps Completed
+- began working through Chapter 7
+- began implementing email server and associated unit test, forgot to mention that this project is also live on Shuttle.  The /health_check endpoint returns a 200 OK and the /subscriptions endpoint saves a name and email into the database.
+
 

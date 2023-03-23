@@ -2,6 +2,7 @@
 
 use std::u16;
 
+use crate::domain::SubscriberEmail;
 use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
@@ -13,6 +14,7 @@ use sqlx::ConnectOptions;
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
+    pub email_client: EmailClientSettings,
 }
 
 #[derive(Deserialize)]
@@ -20,6 +22,19 @@ pub struct ApplicationSettings {
     #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
     pub host: String,
+}
+
+#[derive(Deserialize)]
+pub struct EmailClientSettings {
+    pub base_url: String,
+    pub sender_email: String,
+    pub authorization_token: Secret<String>,
+}
+
+impl EmailClientSettings {
+    pub fn sender(&self) -> Result<SubscriberEmail, String> {
+        SubscriberEmail::parse(self.sender_email.clone())
+    }
 }
 
 #[derive(Deserialize)]
