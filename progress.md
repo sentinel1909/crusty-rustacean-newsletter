@@ -113,4 +113,9 @@
 - began working through Chapter 7
 - began implementing email server and associated unit test, forgot to mention that this project is also live on Shuttle.  The /health_check endpoint returns a 200 OK and the /subscriptions endpoint saves a name and email into the database.
 
+# 2023-04-02
+### Steps Completed
+- continued working through Chapter 7
+- completed up to basic refactoring of test suite into separate files.  Feeling a bit stuck with the next steps of extracting the startup code.  Will read in the book and carry on a bit later
+
 
