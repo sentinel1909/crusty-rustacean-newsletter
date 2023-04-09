@@ -10,26 +10,26 @@ use sqlx::postgres::PgConnectOptions;
 use sqlx::postgres::PgSslMode;
 use sqlx::ConnectOptions;
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
     pub email_client: EmailClientSettings,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 pub struct ApplicationSettings {
     #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
     pub host: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 pub struct EmailClientSettings {
     pub base_url: String,
     pub sender_email: String,
     pub authorization_token: Secret<String>,
-    pub timeout_milliseconds: u64
+    pub timeout_milliseconds: u64,
 }
 
 impl EmailClientSettings {
@@ -42,7 +42,7 @@ impl EmailClientSettings {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 pub struct DatabaseSettings {
     pub username: String,
     pub password: Secret<String>,

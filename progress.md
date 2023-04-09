@@ -118,4 +118,9 @@
 - continued working through Chapter 7
 - completed up to basic refactoring of test suite into separate files.  Feeling a bit stuck with the next steps of extracting the startup code.  Will read in the book and carry on a bit later
 
+# 2023-04-08
+### Steps Completed
+- continued working through Chapter 7
+- completed first round of refactoring of test suite, finished up to Chapter 7.4
+- 
 
