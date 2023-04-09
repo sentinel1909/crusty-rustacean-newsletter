@@ -1,6 +1,9 @@
 //! src/lib/startup.rs
 
-// dependcencies, external and internal
+// dependencies, external and internal
+use crate::email_client::EmailClient;
+use crate::configuration::Settings;
+use crate::configuration::DatabaseSettings;
 use crate::routes::health_check::health_check;
 use crate::routes::subscriptions::subscribe;
 use axum::{
@@ -10,6 +13,7 @@ use axum::{
 };
 use hyper::server::conn::AddrIncoming;
 use sqlx::PgPool;
+use sqlx::postgres::PgPoolOptions;
 use std::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::{
@@ -33,8 +37,62 @@ impl MakeRequestId for MakeRequestUuid {
     }
 }
 
+pub struct Application {
+    port: u16,
+    app: App,
+}
+
+impl Application {
+    pub async fn build(configuration: Settings) -> Result<Self, hyper::Error> {
+        let connection_pool = get_connection_pool(&configuration.database);
+        let sender_email = configuration
+            .email_client
+            .sender()
+            .expect("Invalid sender email address.");
+        let timeout = configuration.email_client.timeout();
+        let email_client = EmailClient::new(
+            configuration.email_client.base_url,
+            sender_email,
+            configuration.email_client.authorization_token,
+            timeout,
+        );
+        let address = format!(
+            "{}:{}",
+            configuration.application.host, configuration.application.port
+        );
+        let listener = match TcpListener::bind(address) {
+            Ok(listener) => listener,
+            Err(error) => panic!("Could not get a listener - {}", error)
+        };
+        let port = listener.local_addr().unwrap().port();
+        let app = match run(listener, connection_pool, email_client) {
+            Ok(app) => app,
+            Err(error) => panic!("Could not spin up an app instance - {}", error)
+        };
+
+        Ok(Self { port, app })
+    }
+
+    pub fn port(&self) -> u16 {
+        self.port
+    }
+
+    pub async fn run_until_stopped(self) -> hyper::Result<()> {
+        self.app.await
+    }
+}
+
+// function to get a database connection pool
+pub fn get_connection_pool(
+    configuration: &DatabaseSettings
+) -> PgPool {
+    PgPoolOptions::new()
+        .acquire_timeout(std::time::Duration::from_secs(2))
+        .connect_lazy_with(configuration.with_db())
+}
+
 // run function
-pub fn run(listener: TcpListener, pool: PgPool) -> hyper::Result<App> {
+pub fn run(listener: TcpListener, pool: PgPool, email_client: EmailClient) -> hyper::Result<App> {
     // routes and their corresponding handlers
     let app = Router::new()
         .route("/health_check", get(health_check))
@@ -53,7 +111,8 @@ pub fn run(listener: TcpListener, pool: PgPool) -> hyper::Result<App> {
                 )
                 .propagate_x_request_id(),
         )
-        .with_state(pool);
+        .with_state(pool)
+        .with_state(email_client.clone());
     let server = axum::Server::from_tcp(listener)?.serve(app.into_make_service());
     Ok(server)
 }
