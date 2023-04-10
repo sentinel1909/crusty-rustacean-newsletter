@@ -52,7 +52,7 @@ tokio = { version = "1", features = [ "rt", "macros"] }
 wiremock = "0.5"
 
 [dependencies.sqlx]
-version = "0.6"
+version = "0.6.3"
 default-features = false
 features = [
   "runtime-tokio-native-tls",
