@@ -122,5 +122,13 @@
 ### Steps Completed
 - continued working through Chapter 7
 - completed first round of refactoring of test suite, finished up to Chapter 7.4
-- 
+
+# 2023-04-10
+## Steps Completed
+- continued working through Chapter 7
+- completed up to Chapter 7.7, "Sending a Confirmation Email"
+- tiny stumbling block in that I forgot how to migrate changes to the production database, went back to Chapter 5 for a refresh
+  - to migrate to the production data base on Digital Ocean, at the command prompt type: DATABASE_URL sqlx migrate run
+- as part of today's progress, I resolved a couple of issues in GitHub actions such that all tests are now green
+
 
