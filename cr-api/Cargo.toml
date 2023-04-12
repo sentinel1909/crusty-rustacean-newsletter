@@ -1,6 +1,6 @@
 [package]
 name = "cr-api-docker"
-version = "0.1.0"
+version = "0.7.0"
 authors = ["Jeffery D. Mitchell", "<sentinel1909@protonmail.com>"]
 edition = "2021"
 description = "API for the Crusty Rustacean Blog"
@@ -20,7 +20,7 @@ path = "src/bin/main.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = { version = "0.6.7", features = [ "form" ] }
+axum = { version = "0.6.14", features = [ "form" ] }
 axum-macros = "0.3.5"
 chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
 config = "0.13.3"
