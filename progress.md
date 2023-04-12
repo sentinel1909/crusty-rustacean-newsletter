@@ -131,4 +131,9 @@
   - to migrate to the production data base on Digital Ocean, at the command prompt type: DATABASE_URL sqlx migrate run
 - as part of today's progress, I resolved a couple of issues in GitHub actions such that all tests are now green
 
+# 2023-04-11
+## Steps Completed
+- started into Chapter 7.7, but have fallen a bit flat.
+- need to study state in Axum, having difficulty understanding how to put the email client in state and then access it as needed, may have to use a combination of state and extensions
+
 
