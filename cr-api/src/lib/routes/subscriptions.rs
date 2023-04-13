@@ -1,6 +1,7 @@
 // subscribe.rs
 
 use crate::domain::{NewSubscriber, SubscriberEmail, SubscriberName};
+use crate::startup::ApplicationState;
 use axum::{
     extract::{Form, State},
     http::StatusCode,
@@ -23,7 +24,7 @@ pub struct SubscriptionData {
     skip(new_subscriber, pool)
 )]
 pub async fn insert_subscriber(
-    State(pool): State<PgPool>,
+    pool: PgPool,
     new_subscriber: &NewSubscriber,
 ) -> Result<(), sqlx::Error> {
     let _ = sqlx::query!(
@@ -55,22 +56,42 @@ impl TryFrom<Form<SubscriptionData>> for NewSubscriber {
 
 #[tracing::instrument(
     name = "Adding a new subscriber",
-    skip(subscription_data, pool),
+    skip(subscription_data, application_state),
     fields(
         subscriber_email = %subscription_data.email,
         subscriber_name = %subscription_data.name
     )
 )]
 pub async fn subscribe(
-    pool: State<PgPool>,
+    State(application_state): State<ApplicationState>,
     subscription_data: Form<SubscriptionData>,
 ) -> impl IntoResponse {
     let new_subscriber = match subscription_data.try_into() {
         Ok(subscription_data) => subscription_data,
         Err(_) => return StatusCode::BAD_REQUEST,
     };
-    match insert_subscriber(pool, &new_subscriber).await {
-        Ok(_) => StatusCode::OK,
-        Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
+
+    if insert_subscriber(application_state.db_pool, &new_subscriber)
+        .await
+        .is_err()
+    {
+        return StatusCode::INTERNAL_SERVER_ERROR;
     }
+
+    // Send a (useless) email to the new subscriber.
+    // We are ignoring email delivery errors for now.
+    if application_state
+        .em_client
+        .send_email(
+            new_subscriber.email,
+            "Welcome!",
+            "Welcome to our newsletter!",
+            "Welcome to our newsletter!",
+        )
+        .await
+        .is_err()
+    {
+        return StatusCode::INTERNAL_SERVER_ERROR;
+    }
+    StatusCode::OK
 }

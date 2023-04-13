@@ -11,6 +11,7 @@ use axum::{
     routing::{get, post, IntoMakeService},
     Router, Server,
 };
+use axum_macros::FromRef;
 use hyper::server::conn::AddrIncoming;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
@@ -40,6 +41,12 @@ impl MakeRequestId for MakeRequestUuid {
 pub struct Application {
     port: u16,
     app: App,
+}
+
+#[derive(Clone, Debug, FromRef)]
+pub struct ApplicationState {
+    pub db_pool: PgPool,
+    pub em_client: EmailClient,
 }
 
 impl Application {
@@ -91,6 +98,12 @@ pub fn get_connection_pool(configuration: &DatabaseSettings) -> PgPool {
 
 // run function
 pub fn run(listener: TcpListener, pool: PgPool, email_client: EmailClient) -> hyper::Result<App> {
+    // initialize the application state
+    let application_state = ApplicationState {
+        db_pool: pool,
+        em_client: email_client,
+    };
+
     // routes and their corresponding handlers
     let app = Router::new()
         .route("/health_check", get(health_check))
@@ -109,8 +122,7 @@ pub fn run(listener: TcpListener, pool: PgPool, email_client: EmailClient) -> hy
                 )
                 .propagate_x_request_id(),
         )
-        .with_state(pool)
-        .with_state(email_client);
+        .with_state(application_state);
     let server = axum::Server::from_tcp(listener)?.serve(app.into_make_service());
     Ok(server)
 }

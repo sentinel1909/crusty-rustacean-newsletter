@@ -23,7 +23,7 @@ default-members = [
 ]
 
 [dependencies]
-axum = "0.6.14"
+axum = "0.6.15"
 cr-api-docker = { path = "cr-api" }
 shuttle-axum = { version = "0.13.0" }
 shuttle-runtime = { version = "0.13.0" }

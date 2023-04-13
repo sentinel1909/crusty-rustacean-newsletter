@@ -136,4 +136,10 @@
 - started into Chapter 7.7, but have fallen a bit flat.
 - need to study state in Axum, having difficulty understanding how to put the email client in state and then access it as needed, may have to use a combination of state and extensions
 
+# 2023-04-12
+## Steps Completed
+- managed to get the application state setup correctly (I think) with the database pool and email client
+- tests that should be green by end of Chapter 7.7.1 are failing, not sure why yet
+- Shuttle related code is broken because of the change to app state
+
 

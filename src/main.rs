@@ -23,6 +23,7 @@ async fn axum(#[shuttle_shared_db::Postgres] pool: PgPool) -> ShuttleAxum {
         .map_err(CustomError::new)?;
 
     info!("Database migrated...spinning up the application...");
+    
     let router = Router::new()
         .route("/health_check", get(health_check))
         .route("/subscriptions", post(subscribe))
