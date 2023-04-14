@@ -7,11 +7,11 @@ use crate::email_client::EmailClient;
 use crate::routes::health_check::health_check;
 use crate::routes::subscriptions::subscribe;
 use axum::{
+    extract::FromRef,
     http::Request,
     routing::{get, post, IntoMakeService},
     Router, Server,
 };
-use axum_macros::FromRef;
 use hyper::server::conn::AddrIncoming;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
@@ -44,7 +44,7 @@ pub struct Application {
 }
 
 #[derive(Clone, Debug, FromRef)]
-pub struct ApplicationState {
+pub struct AppState {
     pub db_pool: PgPool,
     pub em_client: EmailClient,
 }
@@ -99,7 +99,7 @@ pub fn get_connection_pool(configuration: &DatabaseSettings) -> PgPool {
 // run function
 pub fn run(listener: TcpListener, pool: PgPool, email_client: EmailClient) -> hyper::Result<App> {
     // initialize the application state
-    let application_state = ApplicationState {
+    let app_state = AppState {
         db_pool: pool,
         em_client: email_client,
     };
@@ -122,7 +122,7 @@ pub fn run(listener: TcpListener, pool: PgPool, email_client: EmailClient) -> hy
                 )
                 .propagate_x_request_id(),
         )
-        .with_state(application_state);
+        .with_state(app_state);
     let server = axum::Server::from_tcp(listener)?.serve(app.into_make_service());
     Ok(server)
 }

@@ -1,7 +1,7 @@
 // subscribe.rs
 
 use crate::domain::{NewSubscriber, SubscriberEmail, SubscriberName};
-use crate::startup::ApplicationState;
+use crate::startup::AppState;
 use axum::{
     extract::{Form, State},
     http::StatusCode,
@@ -24,7 +24,7 @@ pub struct SubscriptionData {
     skip(new_subscriber, pool)
 )]
 pub async fn insert_subscriber(
-    pool: PgPool,
+    pool: &PgPool,
     new_subscriber: &NewSubscriber,
 ) -> Result<(), sqlx::Error> {
     let _ = sqlx::query!(
@@ -36,11 +36,12 @@ pub async fn insert_subscriber(
         new_subscriber.name.as_ref(),
         Utc::now()
     )
-    .execute(&pool)
+    .execute(pool)
     .await
     .map_err(|e| {
         tracing::error!("Failed to execute query: {:?}", e);
-    });
+        e
+    })?;
     Ok(())
 }
 
@@ -56,14 +57,14 @@ impl TryFrom<Form<SubscriptionData>> for NewSubscriber {
 
 #[tracing::instrument(
     name = "Adding a new subscriber",
-    skip(subscription_data, application_state),
+    skip(subscription_data, app_state),
     fields(
         subscriber_email = %subscription_data.email,
         subscriber_name = %subscription_data.name
     )
 )]
 pub async fn subscribe(
-    State(application_state): State<ApplicationState>,
+    State(app_state): State<AppState>,
     subscription_data: Form<SubscriptionData>,
 ) -> impl IntoResponse {
     let new_subscriber = match subscription_data.try_into() {
@@ -71,16 +72,13 @@ pub async fn subscribe(
         Err(_) => return StatusCode::BAD_REQUEST,
     };
 
-    if insert_subscriber(application_state.db_pool, &new_subscriber)
-        .await
-        .is_err()
-    {
+    if insert_subscriber(&app_state.db_pool, &new_subscriber).await.is_err() {
         return StatusCode::INTERNAL_SERVER_ERROR;
     }
-
+    
     // Send a (useless) email to the new subscriber.
     // We are ignoring email delivery errors for now.
-    if application_state
+    if app_state
         .em_client
         .send_email(
             new_subscriber.email,
