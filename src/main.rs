@@ -14,4 +14,3 @@ async fn axum() -> shuttle_axum::ShuttleAxum {
 
     Ok(router.into())
 }
-

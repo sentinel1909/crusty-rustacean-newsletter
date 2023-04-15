@@ -4,6 +4,7 @@
 use crate::configuration::DatabaseSettings;
 use crate::configuration::Settings;
 use crate::email_client::EmailClient;
+use crate::routes::confirm;
 use crate::routes::health_check::health_check;
 use crate::routes::subscriptions::subscribe;
 use axum::{
@@ -38,6 +39,9 @@ impl MakeRequestId for MakeRequestUuid {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct ApplicationBaseUrl(pub String);
+
 pub struct Application {
     port: u16,
     app: App,
@@ -47,6 +51,7 @@ pub struct Application {
 pub struct AppState {
     pub db_pool: PgPool,
     pub em_client: EmailClient,
+    pub bs_url: ApplicationBaseUrl,
 }
 
 impl Application {
@@ -72,7 +77,12 @@ impl Application {
             Err(error) => panic!("Could not get a listener - {}", error),
         };
         let port = listener.local_addr().unwrap().port();
-        let app = match run(listener, connection_pool, email_client) {
+        let app = match run(
+            listener,
+            connection_pool,
+            email_client,
+            configuration.application.base_url,
+        ) {
             Ok(app) => app,
             Err(error) => panic!("Could not spin up an app instance - {}", error),
         };
@@ -97,17 +107,24 @@ pub fn get_connection_pool(configuration: &DatabaseSettings) -> PgPool {
 }
 
 // run function
-pub fn run(listener: TcpListener, pool: PgPool, email_client: EmailClient) -> hyper::Result<App> {
+pub fn run(
+    listener: TcpListener,
+    pool: PgPool,
+    email_client: EmailClient,
+    base_url: String,
+) -> hyper::Result<App> {
     // initialize the application state
     let app_state = AppState {
         db_pool: pool,
         em_client: email_client,
+        bs_url: ApplicationBaseUrl(base_url),
     };
 
     // routes and their corresponding handlers
     let app = Router::new()
         .route("/health_check", get(health_check))
         .route("/subscriptions", post(subscribe))
+        .route("/subscriptions/confirm", get(confirm))
         .layer(
             ServiceBuilder::new()
                 .set_x_request_id(MakeRequestUuid)

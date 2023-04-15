@@ -148,4 +148,8 @@
 - figured out the blocker related to the tests from Chapter 7.7.1, was missing some essential code in the integration tests
 - have reverted Shuttle main runtime to Axum boilerplate, as it was diverging from the book code, which is meant for deployment on Digital Ocean
 
+# 2023-04-15
+## Steps Completed
+- completed up to the end of Chapter 7.7.5, all tests in the green
+
 
