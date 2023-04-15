@@ -142,4 +142,10 @@
 - tests that should be green by end of Chapter 7.7.1 are failing, not sure why yet
 - Shuttle related code is broken because of the change to app state
 
+# 2023-04-14
+## Steps Completed
+- completed up to the end of Chapter 7.7.2, all tests in the green
+- figured out the blocker related to the tests from Chapter 7.7.1, was missing some essential code in the integration tests
+- have reverted Shuttle main runtime to Axum boilerplate, as it was diverging from the book code, which is meant for deployment on Digital Ocean
+
 

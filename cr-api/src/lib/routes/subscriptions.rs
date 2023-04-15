@@ -1,7 +1,9 @@
 // subscribe.rs
 
 use crate::domain::{NewSubscriber, SubscriberEmail, SubscriberName};
+use crate::email_client::EmailClient;
 use crate::startup::AppState;
+use axum::debug_handler;
 use axum::{
     extract::{Form, State},
     http::StatusCode,
@@ -17,6 +19,16 @@ use uuid::Uuid;
 pub struct SubscriptionData {
     email: String,
     name: String,
+}
+
+impl TryFrom<Form<SubscriptionData>> for NewSubscriber {
+    type Error = String;
+
+    fn try_from(value: Form<SubscriptionData>) -> Result<Self, Self::Error> {
+        let name = SubscriberName::parse(value.0.name)?;
+        let email = SubscriberEmail::parse(value.0.email)?;
+        Ok(NewSubscriber { email, name })
+    }
 }
 
 #[tracing::instrument(
@@ -45,14 +57,30 @@ pub async fn insert_subscriber(
     Ok(())
 }
 
-impl TryFrom<Form<SubscriptionData>> for NewSubscriber {
-    type Error = String;
+#[tracing::instrument(
+    name = "Sending a confirmation email to a new subscriber",
+    skip(email_client, new_subscriber)
+)]
+pub async fn send_confirmation_email(
+    email_client: &EmailClient,
+    new_subscriber: NewSubscriber,
+) -> Result<(), reqwest::Error> {
+    let confirmation_link = "https://there-is-no-such-domain.com/subscriptions/confirm";
 
-    fn try_from(value: Form<SubscriptionData>) -> Result<Self, Self::Error> {
-        let name = SubscriberName::parse(value.0.name)?;
-        let email = SubscriberEmail::parse(value.0.email)?;
-        Ok(NewSubscriber { email, name })
-    }
+    let plain_body = format!(
+        "Welcome to our newsletter!\nVisit {} to confirm your subscription.",
+        confirmation_link
+    );
+
+    let html_body = &format!(
+        "Welcome to our newsletter!<br />
+        Click <a href=\"{}\">here</a> to confirm your subscription.",
+        confirmation_link
+    );
+
+    email_client
+        .send_email(new_subscriber.email, "Welcome!", html_body, &plain_body)
+        .await
 }
 
 #[tracing::instrument(
@@ -63,6 +91,7 @@ impl TryFrom<Form<SubscriptionData>> for NewSubscriber {
         subscriber_name = %subscription_data.name
     )
 )]
+#[debug_handler(state = AppState)]
 pub async fn subscribe(
     State(app_state): State<AppState>,
     subscription_data: Form<SubscriptionData>,
@@ -72,20 +101,14 @@ pub async fn subscribe(
         Err(_) => return StatusCode::BAD_REQUEST,
     };
 
-    if insert_subscriber(&app_state.db_pool, &new_subscriber).await.is_err() {
+    if insert_subscriber(&app_state.db_pool, &new_subscriber)
+        .await
+        .is_err()
+    {
         return StatusCode::INTERNAL_SERVER_ERROR;
     }
-    
-    // Send a (useless) email to the new subscriber.
-    // We are ignoring email delivery errors for now.
-    if app_state
-        .em_client
-        .send_email(
-            new_subscriber.email,
-            "Welcome!",
-            "Welcome to our newsletter!",
-            "Welcome to our newsletter!",
-        )
+
+    if send_confirmation_email(&app_state.em_client, new_subscriber)
         .await
         .is_err()
     {

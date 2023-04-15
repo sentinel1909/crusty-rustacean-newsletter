@@ -1,0 +1,157 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'cr-api-shuttle'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=cr-api-shuttle",
+          "--package=cr-api-shuttle"
+        ],
+        "filter": {
+          "name": "cr-api-shuttle",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'cr-api-shuttle'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=cr-api-shuttle",
+          "--package=cr-api-shuttle"
+        ],
+        "filter": {
+          "name": "cr-api-shuttle",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'cr-api-docker'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=cr-api-docker"
+        ],
+        "filter": {
+          "name": "cr-api-docker",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'cr_api_docker'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=cr_api_docker",
+          "--package=cr-api-docker"
+        ],
+        "filter": {
+          "name": "cr_api_docker",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'cr_api_docker'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=cr_api_docker",
+          "--package=cr-api-docker"
+        ],
+        "filter": {
+          "name": "cr_api_docker",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug integration test 'api'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--test=api",
+          "--package=cr-api-docker"
+        ],
+        "filter": {
+          "name": "api",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'project-init'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=project-init",
+          "--package=project-init"
+        ],
+        "filter": {
+          "name": "project-init",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'project-init'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=project-init",
+          "--package=project-init"
+        ],
+        "filter": {
+          "name": "project-init",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

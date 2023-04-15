@@ -49,10 +49,14 @@ pub async fn spawn_app() -> TestApp {
     // Randomise configuration to ensure test isolation
     let configuration = {
         let mut c = get_configuration().expect("Failed to read configuration.");
-        Uuid::new_v4().to_string();
+        c.database.database_name = Uuid::new_v4().to_string();
         c.application.port = 0;
+        c.email_client.base_url = email_server.uri();
         c
     };
+
+    // Create and migrate the database
+    configure_database(&configuration.database).await;
 
     let application = Application::build(configuration.clone())
         .await
