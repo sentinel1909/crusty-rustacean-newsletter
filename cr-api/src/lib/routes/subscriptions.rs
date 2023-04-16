@@ -10,8 +10,10 @@ use axum::{
     response::IntoResponse,
 };
 use chrono::Utc;
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
 use serde::Deserialize;
-use sqlx::PgPool;
+use sqlx::{Postgres, Transaction};
 use uuid::Uuid;
 
 // data structure to model the incoming form data from the subscribe route, will remove dead_code annotation in the future
@@ -31,30 +33,64 @@ impl TryFrom<Form<SubscriptionData>> for NewSubscriber {
     }
 }
 
+// Generate a random 25-characters-long case-sensitive subscription token.
+fn generate_subscription_token() -> String {
+    let mut rng = thread_rng();
+    std::iter::repeat_with(|| rng.sample(Alphanumeric))
+        .map(char::from)
+        .take(25)
+        .collect()
+}
+
 #[tracing::instrument(
-    name = "Saving new subscriber details in the database",
-    skip(new_subscriber, pool)
+    name = "Store subscription token in the database",
+    skip(subscription_token, transaction)
 )]
-pub async fn insert_subscriber(
-    pool: &PgPool,
-    new_subscriber: &NewSubscriber,
+pub async fn store_token(
+    transaction: &mut Transaction<'_, Postgres>,
+    subscriber_id: Uuid,
+    subscription_token: &str,
 ) -> Result<(), sqlx::Error> {
-    let _ = sqlx::query!(
-        r#"
-        INSERT INTO subscriptions (id, email, name, subscribed_at, status) VALUES ($1, $2, $3, $4, 'pending_confirmation')
-        "#,
-        Uuid::new_v4(),
-        new_subscriber.email.as_ref(),
-        new_subscriber.name.as_ref(),
-        Utc::now()
+    sqlx::query!(
+        r#"INSERT INTO subscription_tokens (subscription_token, subscriber_id)
+VALUES ($1, $2)"#,
+        subscription_token,
+        subscriber_id
     )
-    .execute(pool)
+    .execute(transaction)
     .await
     .map_err(|e| {
         tracing::error!("Failed to execute query: {:?}", e);
         e
     })?;
     Ok(())
+}
+
+#[tracing::instrument(
+    name = "Saving new subscriber details in the database",
+    skip(new_subscriber, transaction)
+)]
+pub async fn insert_subscriber(
+    transaction: &mut Transaction<'_, Postgres>,
+    new_subscriber: &NewSubscriber,
+) -> Result<Uuid, sqlx::Error> {
+    let subscriber_id = Uuid::new_v4();
+    let _ = sqlx::query!(
+        r#"
+        INSERT INTO subscriptions (id, email, name, subscribed_at, status) VALUES ($1, $2, $3, $4, 'pending_confirmation')
+        "#,
+        subscriber_id,
+        new_subscriber.email.as_ref(),
+        new_subscriber.name.as_ref(),
+        Utc::now()
+    )
+    .execute(transaction)
+    .await
+    .map_err(|e| {
+        tracing::error!("Failed to execute query: {:?}", e);
+        e
+    })?;
+    Ok(subscriber_id)
 }
 
 #[tracing::instrument(
@@ -65,10 +101,11 @@ pub async fn send_confirmation_email(
     email_client: &EmailClient,
     new_subscriber: NewSubscriber,
     base_url: &str,
+    subscription_token: &str,
 ) -> Result<(), reqwest::Error> {
     let confirmation_link = format!(
-        "{}/subscriptions/confirm?subscription_token=mytoken",
-        base_url
+        "{}/subscriptions/confirm?subscription_token={}",
+        base_url, subscription_token
     );
 
     let plain_body = format!(
@@ -104,19 +141,37 @@ pub async fn subscribe(
         Ok(subscription_data) => subscription_data,
         Err(_) => return StatusCode::BAD_REQUEST,
     };
+    let mut transaction = match app_state.db_pool.begin().await {
+        Ok(transaction) => transaction,
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR,
+    };
+    let subscriber_id = match insert_subscriber(&mut transaction, &new_subscriber).await {
+        Ok(subscriber_id) => subscriber_id,
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR,
+    };
 
-    if insert_subscriber(&app_state.db_pool, &new_subscriber)
+    let subscription_token = generate_subscription_token();
+    if store_token(&mut transaction, subscriber_id, &subscription_token)
         .await
         .is_err()
     {
         return StatusCode::INTERNAL_SERVER_ERROR;
     }
+    if transaction.commit().await.is_err() {
+        return StatusCode::INTERNAL_SERVER_ERROR;
+    }
 
-    if send_confirmation_email(&app_state.em_client, new_subscriber, &app_state.bs_url.0)
-        .await
-        .is_err()
+    if send_confirmation_email(
+        &app_state.em_client,
+        new_subscriber,
+        &app_state.bs_url.0,
+        &subscription_token,
+    )
+    .await
+    .is_err()
     {
         return StatusCode::INTERNAL_SERVER_ERROR;
     }
+
     StatusCode::OK
 }

@@ -398,7 +398,7 @@ dependencies = [
 
 [[package]]
 name = "cr-api-docker"
-version = "0.7.7"
+version = "0.7.9"
 dependencies = [
  "axum",
  "chrono",
@@ -411,6 +411,7 @@ dependencies = [
  "once_cell",
  "quickcheck",
  "quickcheck_macros",
+ "rand 0.8.5",
  "reqwest",
  "secrecy",
  "serde",
@@ -432,7 +433,7 @@ dependencies = [
 
 [[package]]
 name = "cr-api-shuttle"
-version = "0.7.7"
+version = "0.7.9"
 dependencies = [
  "axum",
  "cr-api-docker",

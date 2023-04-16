@@ -150,6 +150,6 @@
 
 # 2023-04-15
 ## Steps Completed
-- completed up to the end of Chapter 7.7.5, all tests in the green
+- completed Chapter 7, all tests in the green
 
 
