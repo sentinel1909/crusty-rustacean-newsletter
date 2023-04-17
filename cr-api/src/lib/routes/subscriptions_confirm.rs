@@ -11,13 +11,49 @@ use serde::Deserialize;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-// struct to represent the query parameters
+// struct to represent the query parameters, which includes a subscription token
 #[derive(Debug, Deserialize)]
 pub struct Parameters {
     subscription_token: String,
 }
 
-// confirm function
+// function which confirms the subscriber in the database
+#[tracing::instrument(name = "Mark subscriber as confirmed", skip(subscriber_id, pool))]
+pub async fn confirm_subscriber(pool: &PgPool, subscriber_id: Uuid) -> Result<(), sqlx::Error> {
+    sqlx::query!(
+        r#"UPDATE subscriptions SET status = 'confirmed' WHERE id = $1"#,
+        subscriber_id,
+    )
+    .execute(pool)
+    .await
+    .map_err(|e| {
+        tracing::error!("Failed to execute query: {:?}", e);
+        e
+    })?;
+    Ok(())
+}
+
+// function which retrieves a subscriber id from an incoming subscription token
+#[tracing::instrument(name = "Get subscriber_id from token", skip(subscription_token, pool))]
+pub async fn get_subscriber_id_from_token(
+    pool: &PgPool,
+    subscription_token: &str,
+) -> Result<Option<Uuid>, sqlx::Error> {
+    let result = sqlx::query!(
+        "SELECT subscriber_id FROM subscription_tokens \
+WHERE subscription_token = $1",
+        subscription_token,
+    )
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| {
+        tracing::error!("Failed to execute query: {:?}", e);
+        e
+    })?;
+    Ok(result.map(|r| r.subscriber_id))
+}
+
+// confirm handler
 #[tracing::instrument(name = "Confirm a pending subscriber")]
 pub async fn confirm(
     State(app_state): State<AppState>,
@@ -41,37 +77,4 @@ pub async fn confirm(
             StatusCode::OK
         }
     }
-}
-
-#[tracing::instrument(name = "Mark subscriber as confirmed", skip(subscriber_id, pool))]
-pub async fn confirm_subscriber(pool: &PgPool, subscriber_id: Uuid) -> Result<(), sqlx::Error> {
-    sqlx::query!(
-        r#"UPDATE subscriptions SET status = 'confirmed' WHERE id = $1"#,
-        subscriber_id,
-    )
-    .execute(pool)
-    .await
-    .map_err(|e| {
-        tracing::error!("Failed to execute query: {:?}", e);
-        e
-    })?;
-    Ok(())
-}
-#[tracing::instrument(name = "Get subscriber_id from token", skip(subscription_token, pool))]
-pub async fn get_subscriber_id_from_token(
-    pool: &PgPool,
-    subscription_token: &str,
-) -> Result<Option<Uuid>, sqlx::Error> {
-    let result = sqlx::query!(
-        "SELECT subscriber_id FROM subscription_tokens \
-WHERE subscription_token = $1",
-        subscription_token,
-    )
-    .fetch_optional(pool)
-    .await
-    .map_err(|e| {
-        tracing::error!("Failed to execute query: {:?}", e);
-        e
-    })?;
-    Ok(result.map(|r| r.subscriber_id))
 }

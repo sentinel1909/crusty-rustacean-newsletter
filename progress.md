@@ -152,4 +152,14 @@
 ## Steps Completed
 - completed Chapter 7, all tests in the green
 
+# 2023-04-16
+### Steps Completed
+- started on Chapter 8
+- had to go off and understand the fundamentals of error handling in Axum, the docs are not clear, needed some context
+- good article here [Using Rust with Axum for Error Handling](https://blog.logrocket.com/rust-axum-error-handling/)
+- key points:
+  - Axum handlers must be infallible, meaning they don't run into errors while they're running
+  - if a handler runs into an error, the incoming request won't get a response
+  - fallible handlers and pattern matching are two ways to handle errors
+
 

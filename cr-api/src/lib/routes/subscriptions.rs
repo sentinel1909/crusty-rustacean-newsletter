@@ -1,5 +1,6 @@
-// subscribe.rs
+// src/lib/routes/subscribe.rs
 
+// dependencies
 use crate::domain::{NewSubscriber, SubscriberEmail, SubscriberName};
 use crate::email_client::EmailClient;
 use crate::startup::AppState;
@@ -16,24 +17,25 @@ use serde::Deserialize;
 use sqlx::{Postgres, Transaction};
 use uuid::Uuid;
 
-// data structure to model the incoming form data from the subscribe route, will remove dead_code annotation in the future
+// data structure to model the incoming form data from the subscribe handler
 #[derive(Deserialize)]
 pub struct SubscriptionData {
     email: String,
     name: String,
 }
 
+// implement the TryFrom conversion trait for the incoming form data, to convert it into our domain data type
 impl TryFrom<Form<SubscriptionData>> for NewSubscriber {
     type Error = String;
 
     fn try_from(value: Form<SubscriptionData>) -> Result<Self, Self::Error> {
-        let name = SubscriberName::parse(value.0.name)?;
-        let email = SubscriberEmail::parse(value.0.email)?;
+        let name = SubscriberName::parse(value.0.name)?;            // check to confirm name exists
+        let email = SubscriberEmail::parse(value.0.email)?;        // check to confirm email exists
         Ok(NewSubscriber { email, name })
     }
 }
 
-// Generate a random 25-characters-long case-sensitive subscription token.
+// function to generate a random 25-characters-long case-sensitive subscription token.
 fn generate_subscription_token() -> String {
     let mut rng = thread_rng();
     std::iter::repeat_with(|| rng.sample(Alphanumeric))
@@ -42,6 +44,7 @@ fn generate_subscription_token() -> String {
         .collect()
 }
 
+// function which stores a subscription token within the subscription_tokens database
 #[tracing::instrument(
     name = "Store subscription token in the database",
     skip(subscription_token, transaction)
@@ -66,6 +69,7 @@ VALUES ($1, $2)"#,
     Ok(())
 }
 
+// function to insert a new subscriber into the subscriptions database
 #[tracing::instrument(
     name = "Saving new subscriber details in the database",
     skip(new_subscriber, transaction)
@@ -124,6 +128,7 @@ pub async fn send_confirmation_email(
         .await
 }
 
+// subscribe handler function
 #[tracing::instrument(
     name = "Adding a new subscriber",
     skip(subscription_data, app_state),
@@ -132,7 +137,6 @@ pub async fn send_confirmation_email(
         subscriber_name = %subscription_data.name
     )
 )]
-#[debug_handler(state = AppState)]
 pub async fn subscribe(
     State(app_state): State<AppState>,
     subscription_data: Form<SubscriptionData>,
@@ -141,10 +145,12 @@ pub async fn subscribe(
         Ok(subscription_data) => subscription_data,
         Err(_) => return StatusCode::BAD_REQUEST,
     };
+
     let mut transaction = match app_state.db_pool.begin().await {
         Ok(transaction) => transaction,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR,
     };
+
     let subscriber_id = match insert_subscriber(&mut transaction, &new_subscriber).await {
         Ok(subscriber_id) => subscriber_id,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR,
@@ -157,6 +163,7 @@ pub async fn subscribe(
     {
         return StatusCode::INTERNAL_SERVER_ERROR;
     }
+
     if transaction.commit().await.is_err() {
         return StatusCode::INTERNAL_SERVER_ERROR;
     }
@@ -169,6 +176,7 @@ pub async fn subscribe(
     )
     .await
     .is_err()
+
     {
         return StatusCode::INTERNAL_SERVER_ERROR;
     }

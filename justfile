@@ -3,6 +3,12 @@
 init-db:
   cargo run -p project-init
 
+dev-local:
+  cd cr-api && cargo watch -x check -x test -x run
+
+test-local:
+  cd cr-api && cargo test
+
 run-local:
   cd cr-api && cargo run
 
