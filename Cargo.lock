@@ -398,8 +398,9 @@ dependencies = [
 
 [[package]]
 name = "cr-api-docker"
-version = "0.8.2"
+version = "0.8.6"
 dependencies = [
+ "anyhow",
  "axum",
  "chrono",
  "claims",
@@ -418,6 +419,7 @@ dependencies = [
  "serde-aux",
  "serde_json",
  "sqlx",
+ "thiserror",
  "tokio",
  "tower",
  "tower-http",
@@ -433,7 +435,7 @@ dependencies = [
 
 [[package]]
 name = "cr-api-shuttle"
-version = "0.8.2"
+version = "0.8.6"
 dependencies = [
  "axum",
  "cr-api-docker",

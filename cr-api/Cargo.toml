@@ -1,6 +1,6 @@
 [package]
 name = "cr-api-docker"
-version = "0.8.2"
+version = "0.8.6"
 authors = ["Jeffery D. Mitchell", "<sentinel1909@protonmail.com>"]
 edition = "2021"
 description = "API for the Crusty Rustacean Blog"
@@ -20,6 +20,7 @@ path = "src/bin/main.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1"
 axum = { version = "0.6.15", features = [ "form", "macros" ] }
 chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
 config = "0.13.3"
@@ -31,6 +32,7 @@ secrecy = { version = "0.8", features = [ "serde"] }
 serde = { version = "1.0.152", features = ["derive"] }
 serde-aux = "4.1.2"
 rand = { version = "0.8", features = [ "std_rng" ]}
+thiserror = "1"
 tokio = { version = "1.26.0", features = [ "macros", "rt-multi-thread" ]}
 tower = "0.4.13"
 tower-http = { version = "0.4.0", features = [ "trace", "request-id", "util" ] }
