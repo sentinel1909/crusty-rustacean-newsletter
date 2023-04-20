@@ -50,6 +50,7 @@ where
 
 #[derive(thiserror::Error)]
 // an enum to wrap errors related to the subscription function
+#[derive(Debug)]
 pub enum SubscribeError {
     #[error("{0}")]
     ValidationError(String),
@@ -57,24 +58,25 @@ pub enum SubscribeError {
     UnexpectedError(#[from] anyhow::Error),
 }
 
-impl std::fmt::Debug for SubscribeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        error_chain_fmt(self, f)
+// implement IntoResponse for the SubscribeError type
+impl IntoResponse for SubscribeError {
+    fn into_response(self) -> Response {
+        match self {
+            SubscribeError::ValidationError(e) => {
+                (StatusCode::BAD_REQUEST, tracing::error!(e)).into_response()
+            }
+            SubscribeError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        }
     }
 }
 
 // a type to wrap a sqlx::Error
+#[derive(Debug)]
 pub struct StoreTokenError(sqlx::Error);
 
 impl std::error::Error for StoreTokenError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         Some(&self.0)
-    }
-}
-
-impl std::fmt::Debug for StoreTokenError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        error_chain_fmt(self, f)
     }
 }
 
@@ -85,19 +87,6 @@ impl std::fmt::Display for StoreTokenError {
             "A database failure was encountered while trying to store a subscription token."
         )
     }
-}
-
-pub fn error_chain_fmt(
-    e: &impl std::error::Error,
-    f: &mut std::fmt::Formatter<'_>,
-) -> std::fmt::Result {
-    writeln!(f, "{}\n", e)?;
-    let mut current = e.source();
-    while let Some(cause) = current {
-        writeln!(f, "Caused by:\n\t{}", cause)?;
-        current = cause.source();
-    }
-    Ok(())
 }
 
 // implement the TryFrom conversion trait for the incoming form data, to convert it into our domain data type
@@ -162,11 +151,7 @@ pub async fn insert_subscriber(
         Utc::now()
     )
     .execute(transaction)
-    .await
-    .map_err(|e| {
-        tracing::error!("Failed to execute query: {:?}", e);
-        e
-    })?;
+    .await?;
     Ok(subscriber_id)
 }
 
@@ -248,16 +233,4 @@ pub async fn subscribe(
     .context("Failed to send a confirmation email.")?;
 
     Ok(StatusCode::OK)
-}
-
-// implement IntoResponse for the 
-impl IntoResponse for SubscribeError {
-    fn into_response(self) -> Response {
-        match self {
-            SubscribeError::ValidationError(e) => {
-                (StatusCode::BAD_REQUEST, tracing::error!(e)).into_response()
-            }
-            SubscribeError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-        }
-    }
 }
