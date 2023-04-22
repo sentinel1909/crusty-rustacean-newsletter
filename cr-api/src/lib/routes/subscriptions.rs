@@ -3,12 +3,11 @@
 // dependencies
 use crate::domain::{NewSubscriber, SubscriberEmail, SubscriberName};
 use crate::email_client::EmailClient;
-use crate::errors::IntoResponseError;
 use crate::startup::AppState;
 use axum::{
     extract::{Form, State},
     http::StatusCode,
-    response::{Response, Result},
+    response::{IntoResponse, Result},
 };
 use chrono::Utc;
 use rand::distributions::Alphanumeric;
@@ -23,20 +22,6 @@ pub struct SubscriptionData {
     email: String,
     name: String,
 }
-
-#[derive(Debug)]
-pub struct StoreTokenError(sqlx::Error);
-
-impl std::fmt::Display for StoreTokenError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "A database error was encountered while trying to store a subscription token."
-        )
-    }
-}
-
-impl IntoResponseError for StoreTokenError {}
 
 // implement the TryFrom conversion trait for the incoming form data, to convert it into our domain data type
 impl TryFrom<Form<SubscriptionData>> for NewSubscriber {
@@ -67,7 +52,7 @@ pub async fn store_token(
     transaction: &mut Transaction<'_, Postgres>,
     subscriber_id: Uuid,
     subscription_token: &str,
-) -> Result<(), StoreTokenError> {
+) -> Result<(), sqlx::Error> {
     sqlx::query!(
         r#"INSERT INTO subscription_tokens (subscription_token, subscriber_id)
 VALUES ($1, $2)"#,
@@ -78,7 +63,7 @@ VALUES ($1, $2)"#,
     .await
     .map_err(|e| {
         tracing::error!("Failed to execute query: {:?}", e);
-        StoreTokenError(e)
+        e
     })?;
     Ok(())
 }
@@ -154,7 +139,7 @@ pub async fn send_confirmation_email(
 pub async fn subscribe(
     State(app_state): State<AppState>,
     subscription_data: Form<SubscriptionData>,
-) -> Result<Response, axum::Error> {
+) -> impl IntoResponse {
     let new_subscriber = match subscription_data.try_into() {
         Ok(subscription_data) => subscription_data,
         Err(_) => return StatusCode::BAD_REQUEST,
@@ -171,7 +156,12 @@ pub async fn subscribe(
     };
 
     let subscription_token = generate_subscription_token();
-    store_token(&mut transaction, subscriber_id, &subscription_token).await?;
+    if store_token(&mut transaction, subscriber_id, &subscription_token)
+        .await
+        .is_err()
+    {
+        return StatusCode::INTERNAL_SERVER_ERROR;
+    }
 
     if transaction.commit().await.is_err() {
         return StatusCode::INTERNAL_SERVER_ERROR;

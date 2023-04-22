@@ -168,4 +168,10 @@
 - error handling for the subscribe handler is 90% there, but lost error resolution on the store_token function
 - need to implement a missing anyhow::Error related trait on the StoreTokenError type
 
+# 2023-04-21
+## Steps Completed
+- after several days of head banging against Chapter 8 and Axum, here is where the journey ends.
+- error handling is not as robust in Axum as it is in Actix
+- will return someday when my skills have improved
+
 
