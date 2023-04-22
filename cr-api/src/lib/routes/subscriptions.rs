@@ -3,12 +3,12 @@
 // dependencies
 use crate::domain::{NewSubscriber, SubscriberEmail, SubscriberName};
 use crate::email_client::EmailClient;
+use crate::errors::IntoResponseError;
 use crate::startup::AppState;
-use anyhow::Context;
 use axum::{
     extract::{Form, State},
     http::StatusCode,
-    response::{IntoResponse, Response, Result},
+    response::{Response, Result},
 };
 use chrono::Utc;
 use rand::distributions::Alphanumeric;
@@ -24,70 +24,19 @@ pub struct SubscriptionData {
     name: String,
 }
 
-// create an AppError type to wrap an anyhow::Error
-pub struct AppError(anyhow::Error);
-
-// implement IntoResponse for AppError
-impl IntoResponse for AppError {
-    fn into_response(self) -> Response {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            tracing::error!("App Error: {}", self.0),
-        )
-            .into_response()
-    }
-}
-
-// implement the From trait for AppError
-impl<E> From<E> for AppError
-where
-    E: Into<anyhow::Error>,
-{
-    fn from(err: E) -> Self {
-        Self(err.into())
-    }
-}
-
-#[derive(thiserror::Error)]
-// an enum to wrap errors related to the subscription function
-#[derive(Debug)]
-pub enum SubscribeError {
-    #[error("{0}")]
-    ValidationError(String),
-    #[error(transparent)]
-    UnexpectedError(#[from] anyhow::Error),
-}
-
-// implement IntoResponse for the SubscribeError type
-impl IntoResponse for SubscribeError {
-    fn into_response(self) -> Response {
-        match self {
-            SubscribeError::ValidationError(e) => {
-                (StatusCode::BAD_REQUEST, tracing::error!(e)).into_response()
-            }
-            SubscribeError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-        }
-    }
-}
-
-// a type to wrap a sqlx::Error
 #[derive(Debug)]
 pub struct StoreTokenError(sqlx::Error);
-
-impl std::error::Error for StoreTokenError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        Some(&self.0)
-    }
-}
 
 impl std::fmt::Display for StoreTokenError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "A database failure was encountered while trying to store a subscription token."
+            "A database error was encountered while trying to store a subscription token."
         )
     }
 }
+
+impl IntoResponseError for StoreTokenError {}
 
 // implement the TryFrom conversion trait for the incoming form data, to convert it into our domain data type
 impl TryFrom<Form<SubscriptionData>> for NewSubscriber {
@@ -127,7 +76,10 @@ VALUES ($1, $2)"#,
     )
     .execute(transaction)
     .await
-    .map_err(StoreTokenError)?;
+    .map_err(|e| {
+        tracing::error!("Failed to execute query: {:?}", e);
+        StoreTokenError(e)
+    })?;
     Ok(())
 }
 
@@ -151,7 +103,11 @@ pub async fn insert_subscriber(
         Utc::now()
     )
     .execute(transaction)
-    .await?;
+    .await
+    .map_err(|e| {
+        tracing::error!("Failed to execute query: {:?}", e);
+        e
+    })?;
     Ok(subscriber_id)
 }
 
@@ -198,39 +154,40 @@ pub async fn send_confirmation_email(
 pub async fn subscribe(
     State(app_state): State<AppState>,
     subscription_data: Form<SubscriptionData>,
-) -> Result<StatusCode, SubscribeError> {
-    let new_subscriber = subscription_data
-        .try_into()
-        .map_err(SubscribeError::ValidationError)?;
+) -> Result<Response, axum::Error> {
+    let new_subscriber = match subscription_data.try_into() {
+        Ok(subscription_data) => subscription_data,
+        Err(_) => return StatusCode::BAD_REQUEST,
+    };
 
-    let mut transaction = app_state
-        .db_pool
-        .begin()
-        .await
-        .context("Failed to acquire a Postgres connection from the pool")?;
+    let mut transaction = match app_state.db_pool.begin().await {
+        Ok(transaction) => transaction,
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR,
+    };
 
-    let subscriber_id = insert_subscriber(&mut transaction, &new_subscriber)
-        .await
-        .context("Failed to insert new subscriber in the database.")?;
+    let subscriber_id = match insert_subscriber(&mut transaction, &new_subscriber).await {
+        Ok(subscriber_id) => subscriber_id,
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR,
+    };
 
     let subscription_token = generate_subscription_token();
-    store_token(&mut transaction, subscriber_id, &subscription_token)
-        .await
-        .context("Failed to store the confirmation token for a new subscriber.")?;
+    store_token(&mut transaction, subscriber_id, &subscription_token).await?;
 
-    transaction
-        .commit()
-        .await
-        .context("Failed to commit SQL transaction to store a new subscriber.")?;
+    if transaction.commit().await.is_err() {
+        return StatusCode::INTERNAL_SERVER_ERROR;
+    }
 
-    send_confirmation_email(
+    if send_confirmation_email(
         &app_state.em_client,
         new_subscriber,
         &app_state.bs_url.0,
         &subscription_token,
     )
     .await
-    .context("Failed to send a confirmation email.")?;
+    .is_err()
+    {
+        return StatusCode::INTERNAL_SERVER_ERROR;
+    }
 
-    Ok(StatusCode::OK)
+    StatusCode::OK
 }
