@@ -170,8 +170,6 @@
 
 # 2023-04-21
 ## Steps Completed
-- after several days of head banging against Chapter 8 and Axum, here is where the journey ends.
-- error handling is not as robust in Axum as it is in Actix
-- will return someday when my skills have improved
+- continuing to work on error handling in Chapter 8
 
 

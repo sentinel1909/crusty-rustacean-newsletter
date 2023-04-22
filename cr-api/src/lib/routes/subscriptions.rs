@@ -3,11 +3,12 @@
 // dependencies
 use crate::domain::{NewSubscriber, SubscriberEmail, SubscriberName};
 use crate::email_client::EmailClient;
+use crate::errors::StoreTokenError;
 use crate::startup::AppState;
 use axum::{
     extract::{Form, State},
     http::StatusCode,
-    response::{IntoResponse, Result},
+    response::{ErrorResponse, Result},
 };
 use chrono::Utc;
 use rand::distributions::Alphanumeric;
@@ -52,7 +53,7 @@ pub async fn store_token(
     transaction: &mut Transaction<'_, Postgres>,
     subscriber_id: Uuid,
     subscription_token: &str,
-) -> Result<(), sqlx::Error> {
+) -> Result<(), StoreTokenError> {
     sqlx::query!(
         r#"INSERT INTO subscription_tokens (subscription_token, subscriber_id)
 VALUES ($1, $2)"#,
@@ -63,7 +64,7 @@ VALUES ($1, $2)"#,
     .await
     .map_err(|e| {
         tracing::error!("Failed to execute query: {:?}", e);
-        e
+        StoreTokenError(e)
     })?;
     Ok(())
 }
@@ -139,32 +140,27 @@ pub async fn send_confirmation_email(
 pub async fn subscribe(
     State(app_state): State<AppState>,
     subscription_data: Form<SubscriptionData>,
-) -> impl IntoResponse {
+) -> Result<StatusCode, ErrorResponse> {
     let new_subscriber = match subscription_data.try_into() {
         Ok(subscription_data) => subscription_data,
-        Err(_) => return StatusCode::BAD_REQUEST,
+        Err(_) => return Ok(StatusCode::BAD_REQUEST),
     };
 
     let mut transaction = match app_state.db_pool.begin().await {
         Ok(transaction) => transaction,
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR,
+        Err(_) => return Ok(StatusCode::INTERNAL_SERVER_ERROR),
     };
 
     let subscriber_id = match insert_subscriber(&mut transaction, &new_subscriber).await {
         Ok(subscriber_id) => subscriber_id,
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR,
+        Err(_) => return Ok(StatusCode::INTERNAL_SERVER_ERROR),
     };
 
     let subscription_token = generate_subscription_token();
-    if store_token(&mut transaction, subscriber_id, &subscription_token)
-        .await
-        .is_err()
-    {
-        return StatusCode::INTERNAL_SERVER_ERROR;
-    }
+    store_token(&mut transaction, subscriber_id, &subscription_token).await?;
 
     if transaction.commit().await.is_err() {
-        return StatusCode::INTERNAL_SERVER_ERROR;
+        return Ok(StatusCode::INTERNAL_SERVER_ERROR);
     }
 
     if send_confirmation_email(
@@ -176,8 +172,8 @@ pub async fn subscribe(
     .await
     .is_err()
     {
-        return StatusCode::INTERNAL_SERVER_ERROR;
+        return Ok(StatusCode::INTERNAL_SERVER_ERROR);
     }
 
-    StatusCode::OK
+    Ok(StatusCode::OK)
 }
