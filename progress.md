@@ -170,6 +170,8 @@
 
 # 2023-04-21
 ## Steps Completed
-- continuing to work on error handling in Chapter 8
+- redo of Chapter 8 complete, with book code for subscribe error handling completed
+- no error fidelity as described in the book, just not seeing the same things or messages that are expected
+- will try to do the confirm handler next
 
 

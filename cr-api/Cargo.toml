@@ -1,6 +1,6 @@
 [package]
 name = "cr-api-docker"
-version = "0.8.2"
+version = "0.8.6"
 authors = ["Jeffery D. Mitchell", "<sentinel1909@protonmail.com>"]
 edition = "2021"
 description = "API for the Crusty Rustacean Blog"

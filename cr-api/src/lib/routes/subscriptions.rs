@@ -3,12 +3,13 @@
 // dependencies
 use crate::domain::{NewSubscriber, SubscriberEmail, SubscriberName};
 use crate::email_client::EmailClient;
-use crate::errors::StoreTokenError;
+use crate::errors::{StoreTokenError, SubscribeError};
 use crate::startup::AppState;
+use anyhow::Context;
 use axum::{
     extract::{Form, State},
     http::StatusCode,
-    response::{ErrorResponse, Result},
+    response::Result,
 };
 use chrono::Utc;
 use rand::distributions::Alphanumeric;
@@ -62,10 +63,7 @@ VALUES ($1, $2)"#,
     )
     .execute(transaction)
     .await
-    .map_err(|e| {
-        tracing::error!("Failed to execute query: {:?}", e);
-        StoreTokenError(e)
-    })?;
+    .map_err(StoreTokenError)?;
     Ok(())
 }
 
@@ -140,40 +138,39 @@ pub async fn send_confirmation_email(
 pub async fn subscribe(
     State(app_state): State<AppState>,
     subscription_data: Form<SubscriptionData>,
-) -> Result<StatusCode, ErrorResponse> {
-    let new_subscriber = match subscription_data.try_into() {
-        Ok(subscription_data) => subscription_data,
-        Err(_) => return Ok(StatusCode::BAD_REQUEST),
-    };
+) -> Result<StatusCode, SubscribeError> {
+    let new_subscriber = subscription_data
+        .try_into()
+        .map_err(SubscribeError::ValidationError)?;
 
-    let mut transaction = match app_state.db_pool.begin().await {
-        Ok(transaction) => transaction,
-        Err(_) => return Ok(StatusCode::INTERNAL_SERVER_ERROR),
-    };
+    let mut transaction = app_state
+        .db_pool
+        .begin()
+        .await
+        .context("Failed to acquire a Postgres connection from the pool.")?;
 
-    let subscriber_id = match insert_subscriber(&mut transaction, &new_subscriber).await {
-        Ok(subscriber_id) => subscriber_id,
-        Err(_) => return Ok(StatusCode::INTERNAL_SERVER_ERROR),
-    };
+    let subscriber_id = insert_subscriber(&mut transaction, &new_subscriber)
+        .await
+        .context("Failed to insert a new subscriber in the database.")?;
 
     let subscription_token = generate_subscription_token();
-    store_token(&mut transaction, subscriber_id, &subscription_token).await?;
+    store_token(&mut transaction, subscriber_id, &subscription_token)
+        .await
+        .context("Failed to store the confirmation token for a new subscriber.")?;
 
-    if transaction.commit().await.is_err() {
-        return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-    }
+    transaction
+        .commit()
+        .await
+        .context("Failed to commit SQL transaction to store a new subscriber.")?;
 
-    if send_confirmation_email(
+    send_confirmation_email(
         &app_state.em_client,
         new_subscriber,
         &app_state.bs_url.0,
         &subscription_token,
     )
     .await
-    .is_err()
-    {
-        return Ok(StatusCode::INTERNAL_SERVER_ERROR);
-    }
+    .context("Failed to send a confirmation email.")?;
 
     Ok(StatusCode::OK)
 }
