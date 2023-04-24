@@ -174,4 +174,9 @@
 - no error fidelity as described in the book, just not seeing the same things or messages that are expected
 - will try to do the confirm handler next
 
+# 2023-04-23
+## Steps Completed
+- Chapter 8 now working as intended
+- all that was needed was a tracing::error! at the top of the SubscribeError IntoResponse code
+
 
