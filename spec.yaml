@@ -23,7 +23,7 @@ services:
       - key: APP_EMAIL_CLIENT__SENDER_EMAIL
         scope: RUN_TIME
         value: ${self.SENDER_EMAIL}
-      - key: APP_EMAIL_CLIENT__AUTHENTICATION_TOKEN
+      - key: APP_EMAIL_CLIENT__AUTHORIZATION_TOKEN
         scope: RUN_TIME
         value: ${self.AUTHORIZATION_TOKEN}
       - key: APP_DATABASE__USERNAME
