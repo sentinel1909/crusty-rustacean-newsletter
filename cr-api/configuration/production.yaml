@@ -4,4 +4,5 @@ database:
   require_ssl: true
 email_client:
   base_url: "https://api.postmarkapp.com"
-  sender_email: "crusty-rustacean@foschimitchell.ca"
+  sender_email: "set this in the environment variables"
+  authorization_token: "set this in a secret or environment variables"
