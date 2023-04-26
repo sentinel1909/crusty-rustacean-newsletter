@@ -20,12 +20,6 @@ services:
       - key: APP_APPLICATION__BASE_URL
         scope: RUN_TIME
         value: ${APP_URL}
-      - key: APP_EMAIL_CLIENT__SENDER_EMAIL
-        scope: RUN_TIME
-        value: ${self.SENDER_EMAIL}
-      - key: APP_EMAIL_CLIENT__AUTHORIZATION_TOKEN
-        scope: RUN_TIME
-        value: ${self.AUTHORIZATION_TOKEN}
       - key: APP_DATABASE__USERNAME
         scope: RUN_TIME
         value: ${newsletter.USERNAME}
