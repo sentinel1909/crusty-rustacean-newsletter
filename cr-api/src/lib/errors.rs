@@ -26,12 +26,14 @@ impl std::fmt::Debug for SubscribeError {
 impl IntoResponse for SubscribeError {
     fn into_response(self) -> Response {
         tracing::error!("{:?}", self);
-        let status = match self {
-            SubscribeError::ValidationError(_) => StatusCode::BAD_REQUEST,
-            SubscribeError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        let (status, msg) = match self {
+            SubscribeError::ValidationError(_) => (StatusCode::BAD_REQUEST, "bad request"),
+            SubscribeError::UnexpectedError(_) => {
+                (StatusCode::INTERNAL_SERVER_ERROR, "internal_server_error")
+            }
         };
 
-        status.into_response()
+        (status, msg).into_response()
     }
 }
 
@@ -58,6 +60,37 @@ impl std::fmt::Debug for StoreTokenError {
 impl std::error::Error for StoreTokenError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         Some(&self.0)
+    }
+}
+
+// enum to represent a confirmation error, has two variants,Unexpected Error and UnknownToken
+#[derive(thiserror::Error)]
+pub enum ConfirmationError {
+    #[error(transparent)]
+    UnexpectedError(#[from] anyhow::Error),
+    #[error("There is no subscriber associated with the provided token.")]
+    UnknownToken,
+}
+
+// implement the Debug trait for the Confirmation Error type
+impl std::fmt::Debug for ConfirmationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        error_chain_fmt(self, f)
+    }
+}
+
+// implement the IntoResponse trait for the ConfirmationError type
+impl IntoResponse for ConfirmationError {
+    fn into_response(self) -> Response {
+        tracing::error!("{:?}", self);
+        let (status, msg) = match self {
+            Self::UnknownToken => (StatusCode::UNAUTHORIZED, "unauthorized"),
+            Self::UnexpectedError(_) => {
+                (StatusCode::INTERNAL_SERVER_ERROR, "internal server error")
+            }
+        };
+
+        (status, msg).into_response()
     }
 }
 

@@ -1,7 +1,9 @@
 // src/routes/subscriptions_confirm.rs
 
 // dependencies
+use crate::errors::ConfirmationError;
 use crate::startup::AppState;
+use anyhow::Context;
 use axum::{
     extract::{Query, State},
     http::StatusCode,
@@ -25,11 +27,7 @@ pub async fn confirm_subscriber(pool: &PgPool, subscriber_id: Uuid) -> Result<()
         subscriber_id,
     )
     .execute(pool)
-    .await
-    .map_err(|e| {
-        tracing::error!("Failed to execute query: {:?}", e);
-        e
-    })?;
+    .await?;
     Ok(())
 }
 
@@ -45,11 +43,7 @@ WHERE subscription_token = $1",
         subscription_token,
     )
     .fetch_optional(pool)
-    .await
-    .map_err(|e| {
-        tracing::error!("Failed to execute query: {:?}", e);
-        e
-    })?;
+    .await?;
     Ok(result.map(|r| r.subscriber_id))
 }
 
@@ -58,23 +52,14 @@ WHERE subscription_token = $1",
 pub async fn confirm(
     State(app_state): State<AppState>,
     parameters: Query<Parameters>,
-) -> impl IntoResponse {
-    let id = match get_subscriber_id_from_token(&app_state.db_pool, &parameters.subscription_token)
+) -> Result<impl IntoResponse, ConfirmationError> {
+    let subscriber_id =
+        get_subscriber_id_from_token(&app_state.db_pool, &parameters.subscription_token)
+            .await
+            .context("Failed to retrieve the subscriber id associated with the provided token.")?
+            .ok_or(ConfirmationError::UnknownToken)?;
+    confirm_subscriber(&app_state.db_pool, subscriber_id)
         .await
-    {
-        Ok(id) => id,
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR,
-    };
-    match id {
-        None => StatusCode::UNAUTHORIZED,
-        Some(subscriber_id) => {
-            if confirm_subscriber(&app_state.db_pool, subscriber_id)
-                .await
-                .is_err()
-            {
-                return StatusCode::INTERNAL_SERVER_ERROR;
-            }
-            StatusCode::OK
-        }
-    }
+        .context("Failed to update the subscriber status to 'confirmed'.")?;
+    Ok(StatusCode::OK)
 }
