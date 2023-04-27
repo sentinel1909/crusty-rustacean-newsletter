@@ -4,7 +4,7 @@
 use crate::domain::{NewSubscriber, SubscriberEmail, SubscriberName};
 use crate::email_client::EmailClient;
 use crate::errors::{StoreTokenError, SubscribeError};
-use crate::startup::AppState;
+use crate::state::AppState;
 use anyhow::Context;
 use axum::{
     extract::{Form, State},

@@ -7,8 +7,9 @@ use crate::email_client::EmailClient;
 use crate::routes::confirm;
 use crate::routes::health_check::health_check;
 use crate::routes::subscriptions::subscribe;
+use crate::state::AppState;
+use crate::state::ApplicationBaseUrl;
 use axum::{
-    extract::FromRef,
     http::Request,
     routing::{get, post, IntoMakeService},
     Router, Server,
@@ -39,22 +40,15 @@ impl MakeRequestId for MakeRequestUuid {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct ApplicationBaseUrl(pub String);
-
+// struct for an Application type
 pub struct Application {
     port: u16,
     app: App,
 }
 
-#[derive(Clone, Debug, FromRef)]
-pub struct AppState {
-    pub db_pool: PgPool,
-    pub em_client: EmailClient,
-    pub bs_url: ApplicationBaseUrl,
-}
-
+// implementation block to create an instance of an Application
 impl Application {
+    // function to build a new application instance
     pub async fn build(configuration: Settings) -> Result<Self, hyper::Error> {
         let connection_pool = get_connection_pool(&configuration.database);
         let sender_email = configuration
@@ -90,10 +84,12 @@ impl Application {
         Ok(Self { port, app })
     }
 
+    // function to return the port the application is running on
     pub fn port(&self) -> u16 {
         self.port
     }
 
+    // function to run the app until stopped
     pub async fn run_until_stopped(self) -> hyper::Result<()> {
         self.app.await
     }
@@ -113,13 +109,6 @@ pub fn run(
     email_client: EmailClient,
     base_url: String,
 ) -> hyper::Result<App> {
-    // initialize the application state
-    let app_state = AppState {
-        db_pool: pool,
-        em_client: email_client,
-        bs_url: ApplicationBaseUrl(base_url),
-    };
-
     // routes and their corresponding handlers
     let app = Router::new()
         .route("/health_check", get(health_check))
@@ -139,7 +128,11 @@ pub fn run(
                 )
                 .propagate_x_request_id(),
         )
-        .with_state(app_state);
+        .with_state(AppState::create_state(
+            pool,
+            email_client,
+            ApplicationBaseUrl(base_url),
+        ));
     let server = axum::Server::from_tcp(listener)?.serve(app.into_make_service());
     Ok(server)
 }
