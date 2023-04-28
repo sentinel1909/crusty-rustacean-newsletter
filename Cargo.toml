@@ -1,6 +1,6 @@
 [package]
 name = "cr-api-shuttle"
-version = "0.9.0"
+version = "0.9.3"
 edition = "2021"
 description = "API for the Crusty Rustacean Blog"
 readme = "README.md"

@@ -4,9 +4,7 @@
 use crate::configuration::DatabaseSettings;
 use crate::configuration::Settings;
 use crate::email_client::EmailClient;
-use crate::routes::confirm;
-use crate::routes::health_check::health_check;
-use crate::routes::subscriptions::subscribe;
+use crate::routes::{confirm, health_check, publish_newsletter, subscribe};
 use crate::state::AppState;
 use crate::state::ApplicationBaseUrl;
 use axum::{
@@ -114,6 +112,7 @@ pub fn run(
         .route("/health_check", get(health_check))
         .route("/subscriptions", post(subscribe))
         .route("/subscriptions/confirm", get(confirm))
+        .route("/newsletters", post(publish_newsletter))
         .layer(
             ServiceBuilder::new()
                 .set_x_request_id(MakeRequestUuid)
