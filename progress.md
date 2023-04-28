@@ -179,4 +179,10 @@
 - Chapter 8 now working as intended
 - all that was needed was a tracing::error! at the top of the SubscribeError IntoResponse code
 
+# 2023-04-27
+## Steps Completed
+- a little behind in these updates
+- added error handling to confirm handler to round out Chapter 8
+- started working on main for running on Shuttle
+
 
