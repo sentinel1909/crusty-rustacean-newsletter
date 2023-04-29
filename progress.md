@@ -185,4 +185,9 @@
 - added error handling to confirm handler to round out Chapter 8
 - started working on main for running on Shuttle
 
+# 2023-04-28
+## Steps Completed
+- completed up to end of Chapter 9, all tests pass
+- a bit stalled in the main implementation for Shuttle, set up access to secrets and can spin up the database
+- having difficulty understanding how to hook in to the rest of the app from the Shuttle main
 

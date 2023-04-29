@@ -452,7 +452,7 @@ dependencies = [
 
 [[package]]
 name = "cr-api-docker"
-version = "0.9.3"
+version = "0.9.10"
 dependencies = [
  "anyhow",
  "axum",
@@ -489,7 +489,7 @@ dependencies = [
 
 [[package]]
 name = "cr-api-shuttle"
-version = "0.9.3"
+version = "0.9.10"
 dependencies = [
  "anyhow",
  "axum",

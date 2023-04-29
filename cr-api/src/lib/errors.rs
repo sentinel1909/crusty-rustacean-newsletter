@@ -94,6 +94,34 @@ impl IntoResponse for ConfirmationError {
     }
 }
 
+// enum to represent a publish error
+#[derive(thiserror::Error)]
+pub enum PublishError {
+    #[error(transparent)]
+    UnexpectedError(#[from] anyhow::Error),
+}
+
+// implement the Debug trait for the publish error type
+impl std::fmt::Debug for PublishError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        error_chain_fmt(self, f)
+    }
+}
+
+// implement the IntoResponse trait for the publish error type
+impl IntoResponse for PublishError {
+    fn into_response(self) -> Response {
+        tracing::error!("{:?}", self);
+        let (status, msg) = match self {
+            PublishError::UnexpectedError(_) => {
+                (StatusCode::INTERNAL_SERVER_ERROR, "internal server error")
+            }
+        };
+
+        (status, msg).into_response()
+    }
+}
+
 // helper function to nicely format the std::error::Error message chain
 fn error_chain_fmt(
     e: &impl std::error::Error,
