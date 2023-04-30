@@ -116,7 +116,10 @@ async fn requests_missing_authorization_are_rejected() {
 
     // Assert
     assert_eq!(401, response.status().as_u16());
-    assert_eq!(r#"Basic realm="publish""#, response.headers()["WWW-Authenticate"]);
+    assert_eq!(
+        r#"Basic realm="publish""#,
+        response.headers()["WWW-Authenticate"]
+    );
 }
 
 // Use the public API of the application under test to create

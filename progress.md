@@ -191,3 +191,8 @@
 - a bit stalled in the main implementation for Shuttle, set up access to secrets and can spin up the database
 - having difficulty understanding how to hook in to the rest of the app from the Shuttle main
 
+# 2023-04-29
+## Steps Completed
+- completed up to end of chapter 10.2.2
+- all tests green
+

@@ -2,7 +2,7 @@
 
 // dependencies
 use axum::{
-    http::{StatusCode, HeaderValue},
+    http::{HeaderValue, StatusCode},
     response::{IntoResponse, Response},
 };
 use hyper::header;
@@ -116,11 +116,9 @@ impl IntoResponse for PublishError {
     fn into_response(self) -> Response {
         tracing::error!("{:?}", self);
         match self {
-            PublishError::UnexpectedError(_) => {
-                StatusCode::INTERNAL_SERVER_ERROR.into_response()
-            },
+            PublishError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
             PublishError::AuthError(_) => {
-                let mut response= StatusCode::UNAUTHORIZED.into_response();
+                let mut response = StatusCode::UNAUTHORIZED.into_response();
                 let header_value = HeaderValue::from_str(r#"Basic realm="publish""#).unwrap();
                 response
                     .headers_mut()

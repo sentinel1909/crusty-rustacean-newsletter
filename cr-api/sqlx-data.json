@@ -77,5 +77,26 @@
       }
     },
     "query": "SELECT subscriber_id FROM subscription_tokens WHERE subscription_token = $1"
+  },
+  "df5e51c3cbb40ab0f1b52e123a54537961d7390f1edff007b9c12c23c8e3735f": {
+    "describe": {
+      "columns": [
+        {
+          "name": "user_id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        SELECT user_id\n        FROM users\n        WHERE username = $1 AND password = $2\n        "
   }
 }
