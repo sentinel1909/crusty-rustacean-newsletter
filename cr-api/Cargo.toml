@@ -22,6 +22,7 @@ path = "src/bin/main.rs"
 [dependencies]
 anyhow = "1"
 axum = { version = "0.6.17", features = [ "form", "macros" ] }
+base64 = "0.21"
 chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
 config = "0.13.3"
 env_logger = "0.10.0" 

@@ -456,6 +456,7 @@ version = "0.9.10"
 dependencies = [
  "anyhow",
  "axum",
+ "base64 0.21.0",
  "chrono",
  "claims",
  "config",

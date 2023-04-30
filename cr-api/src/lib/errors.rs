@@ -2,9 +2,10 @@
 
 // dependencies
 use axum::{
-    http::StatusCode,
+    http::{StatusCode, HeaderValue},
     response::{IntoResponse, Response},
 };
+use hyper::header;
 
 // enum to represent a SubscribeError, has two variants, ValidationError is user facing, UnexpectedError is operator facing
 #[derive(thiserror::Error)]
@@ -97,6 +98,8 @@ impl IntoResponse for ConfirmationError {
 // enum to represent a publish error
 #[derive(thiserror::Error)]
 pub enum PublishError {
+    #[error("Authentication failed")]
+    AuthError(#[source] anyhow::Error),
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
 }
@@ -112,13 +115,19 @@ impl std::fmt::Debug for PublishError {
 impl IntoResponse for PublishError {
     fn into_response(self) -> Response {
         tracing::error!("{:?}", self);
-        let (status, msg) = match self {
+        match self {
             PublishError::UnexpectedError(_) => {
-                (StatusCode::INTERNAL_SERVER_ERROR, "internal server error")
+                StatusCode::INTERNAL_SERVER_ERROR.into_response()
+            },
+            PublishError::AuthError(_) => {
+                let mut response= StatusCode::UNAUTHORIZED.into_response();
+                let header_value = HeaderValue::from_str(r#"Basic realm="publish""#).unwrap();
+                response
+                    .headers_mut()
+                    .insert(header::WWW_AUTHENTICATE, header_value);
+                response
             }
-        };
-
-        (status, msg).into_response()
+        }
     }
 }
 

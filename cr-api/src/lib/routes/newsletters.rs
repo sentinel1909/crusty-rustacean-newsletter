@@ -7,9 +7,11 @@ use crate::state::AppState;
 use anyhow::Context;
 use axum::{
     extract::State,
-    http::StatusCode,
+    http::{StatusCode, header::HeaderMap},
     response::{IntoResponse, Json},
 };
+use base64::Engine;
+use secrecy::Secret;
 use serde::Deserialize;
 use sqlx::PgPool;
 
@@ -27,6 +29,48 @@ pub struct Content {
 
 struct ConfirmedSubscriber {
     email: SubscriberEmail,
+}
+
+struct Credentials {
+    username: String,
+    password: Secret<String>,
+}
+
+fn basic_authentication(headers: &HeaderMap) -> Result<Credentials, anyhow::Error> {
+    // The header value, if present, must be a valid UTF8 string
+    let header_value = headers
+        .get("Authorization")
+        .context("The 'Authorization' header was missing")?
+        .to_str()
+        .context("The 'Authentication' header was not a valid UTF8 string.")?;
+    let base64encoded_credentials = header_value
+        .strip_prefix("Basic")
+        .context("The authorization scheme was not 'Basic'.")?;
+    let decoded_bytes = base64::engine::general_purpose::STANDARD
+        .decode(base64encoded_credentials)
+        .context("Failed to base64-decode 'Basic' credential.")?;
+    let decoded_credentials = String::from_utf8(decoded_bytes)
+        .context("The decoded credentail string is not valid UTF8.")?;
+
+    // Spit into two segments, using ':' as delimiter
+    let mut credentials = decoded_credentials.splitn(2, ':');
+    let username = credentials
+        .next()
+        .ok_or_else(|| {
+            anyhow::anyhow!("A username must be provided in 'Basic' auth.")
+        })?
+        .to_string();
+    let password = credentials
+        .next()
+        .ok_or_else(|| {
+            anyhow::anyhow!("A password must be provided in 'Basic' auth.")
+        })?
+        .to_string();
+
+    Ok(Credentials {
+        username,
+        password: Secret::new(password)
+    })
 }
 
 #[tracing::instrument(name = "Get confirmed subscribers", skip(pool))]
@@ -57,11 +101,13 @@ async fn get_confirmed_subscribers(
 // publish newsletter handler
 pub async fn publish_newsletter(
     State(app_state): State<AppState>,
+    headers: HeaderMap,
     body: Json<BodyData>,
 ) -> Result<impl IntoResponse, PublishError> {
+    let _credentials = basic_authentication(&headers)
+        .map_err(PublishError::AuthError)?;
     let subscribers = get_confirmed_subscribers(&app_state.db_pool).await?;
     for subscriber in subscribers {
-        // The compiler forces us to handle both the happy and unhappy case!
         match subscriber {
             Ok(subscriber) => {
                 app_state
