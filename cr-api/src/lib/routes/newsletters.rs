@@ -71,13 +71,11 @@ fn basic_authentication(headers: &HeaderMap) -> Result<Credentials, anyhow::Erro
     })
 }
 
-#[tracing::instrument(name = "Get stored credentials",
-skip(username, pool))]
+#[tracing::instrument(name = "Get stored credentials", skip(username, pool))]
 async fn get_stored_credentials(
     username: &str,
     pool: &PgPool,
 ) -> Result<Option<(uuid::Uuid, Secret<String>)>, anyhow::Error> {
-
     let row: Option<_> = sqlx::query!(
         r#"
         SELECT user_id, password_hash
@@ -93,21 +91,15 @@ async fn get_stored_credentials(
     Ok(row)
 }
 
-#[tracing::instrument(name = "Validate credentials",
-skip(credentials, pool))]
+#[tracing::instrument(name = "Validate credentials", skip(credentials, pool))]
 async fn validate_credentials(
     credentials: Credentials,
     pool: &PgPool,
 ) -> Result<uuid::Uuid, PublishError> {
-    let (user_id, expected_password_hash) = get_stored_credentials(
-        &credentials.username,
-        &pool
-    )
-    .await
-    .map_err(PublishError::UnexpectedError)?
-    .ok_or_else(|| {
-        PublishError::AuthError(anyhow::anyhow!("Unknown username."))
-    })?;
+    let (user_id, expected_password_hash) = get_stored_credentials(&credentials.username, &pool)
+        .await
+        .map_err(PublishError::UnexpectedError)?
+        .ok_or_else(|| PublishError::AuthError(anyhow::anyhow!("Unknown username.")))?;
 
     let expected_password_hash = PasswordHash::new(
         &expected_password_hash.expose_secret()
@@ -116,10 +108,10 @@ async fn validate_credentials(
 
     tracing::info_span!("Verify password hash")
         .in_scope(|| {
-            Argon2::default()
-                .verify_password(
-                    credentials.password.expose_secret().as_bytes(), &expected_password_hash
-                )
+            Argon2::default().verify_password(
+                credentials.password.expose_secret().as_bytes(),
+                &expected_password_hash,
+            )
         })
         .context("Invalid password.")
         .map_err(PublishError::AuthError)?;

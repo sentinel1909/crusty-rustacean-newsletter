@@ -39,7 +39,7 @@ impl TestUser {
         Self {
             user_id: Uuid::new_v4(),
             username: Uuid::new_v4().to_string(),
-            password: Uuid::new_v4().to_string()
+            password: Uuid::new_v4().to_string(),
         }
     }
 
@@ -67,7 +67,7 @@ pub struct TestApp {
     pub port: u16,
     pub db_pool: PgPool,
     pub email_server: MockServer,
-    test_user: TestUser
+    test_user: TestUser,
 }
 
 impl TestApp {
@@ -144,7 +144,7 @@ pub async fn spawn_app() -> TestApp {
         port: application_port,
         db_pool: get_connection_pool(&configuration.database),
         email_server,
-        test_user: TestUser::generate()
+        test_user: TestUser::generate(),
     };
     test_app.test_user.store(&test_app.db_pool).await;
     test_app
