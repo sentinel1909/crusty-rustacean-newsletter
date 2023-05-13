@@ -96,15 +96,14 @@ async fn validate_credentials(
     credentials: Credentials,
     pool: &PgPool,
 ) -> Result<uuid::Uuid, PublishError> {
-    let (user_id, expected_password_hash) = get_stored_credentials(&credentials.username, &pool)
+    let (user_id, expected_password_hash) = get_stored_credentials(&credentials.username, pool)
         .await
         .map_err(PublishError::UnexpectedError)?
         .ok_or_else(|| PublishError::AuthError(anyhow::anyhow!("Unknown username.")))?;
 
-    let expected_password_hash = PasswordHash::new(
-        &expected_password_hash.expose_secret()
-    )
-    .map_err(PublishError::UnexpectedError)?;
+    let expected_password_hash = PasswordHash::new(expected_password_hash.expose_secret())
+        .context("Failed to parse hash in PHC string format")
+        .map_err(PublishError::UnexpectedError)?;
 
     tracing::info_span!("Verify password hash")
         .in_scope(|| {
