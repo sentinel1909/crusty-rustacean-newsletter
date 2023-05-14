@@ -193,6 +193,12 @@
 
 # 2023-04-29
 ## Steps Completed
-- completed up to end of chapter 10.2.2
+- completed up to end of Chapter 10.2.2
 - all tests green
+
+# 2023-05-13
+## Steps Completed
+- finished up to the end of Chapter 10.2
+- all tests green
+- this is a tough chapter, need to step back and review
 
