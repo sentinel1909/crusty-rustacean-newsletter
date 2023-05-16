@@ -1,6 +1,6 @@
 [package]
 name = "cr-api-shuttle"
-version = "0.10.2"
+version = "0.10.5"
 edition = "2021"
 description = "API for the Crusty Rustacean Blog"
 readme = "README.md"
@@ -24,12 +24,12 @@ default-members = [
 
 [dependencies]
 anyhow = "1"
-axum = "0.6.17"
+axum = "0.6.18"
 cr-api-docker = { path = "cr-api" }
-shuttle-axum = { version = "0.15.0" }
-shuttle-runtime = { version = "0.15.0" }
-shuttle-secrets = "0.15.0"
-shuttle-shared-db = { version = "0.15.0", features = ["postgres"] }
+shuttle-axum = { version = "0.16.0" }
+shuttle-runtime = { version = "0.16.0" }
+shuttle-secrets = "0.16.0"
+shuttle-shared-db = { version = "0.16.0", features = ["postgres"] }
 sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "postgres"] }
 tokio = { version = "1.26.0" }
 tracing = "0.1.37"

@@ -1,6 +1,6 @@
 [package]
 name = "cr-api-docker"
-version = "0.10.2"
+version = "0.10.5"
 authors = ["Jeffery D. Mitchell", "<sentinel1909@protonmail.com>"]
 edition = "2021"
 description = "API for the Crusty Rustacean Blog"
@@ -22,7 +22,7 @@ path = "src/bin/main.rs"
 [dependencies]
 anyhow = "1"
 argon2 = { version = "0.4", features = ["std"] }
-axum = { version = "0.6.17", features = [ "form", "macros" ] }
+axum = { version = "0.6.18", features = [ "form", "macros" ] }
 base64 = "0.21"
 chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
 config = "0.13.3"

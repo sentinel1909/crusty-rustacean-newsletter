@@ -202,3 +202,9 @@
 - all tests green
 - this is a tough chapter, need to step back and review
 
+# 2023-05-16
+## Steps Completed
+- finished up to the end of Chapter 10.5
+- Welcome page served from "/"
+- all tests green
+
