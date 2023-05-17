@@ -4,8 +4,9 @@
 use crate::configuration::DatabaseSettings;
 use crate::configuration::Settings;
 use crate::email_client::EmailClient;
-use crate::routes::home;
-use crate::routes::{confirm, health_check, publish_newsletter, subscribe};
+use crate::routes::{
+    confirm, health_check, home, login, login_form, publish_newsletter, subscribe,
+};
 use crate::state::AppState;
 use crate::state::ApplicationBaseUrl;
 use axum::{
@@ -111,6 +112,8 @@ pub fn run(
     // routes and their corresponding handlers
     let app = Router::new()
         .route("/", get(home))
+        .route("/login", get(login_form))
+        .route("/login", post(login))
         .route("/health_check", get(health_check))
         .route("/subscriptions", post(subscribe))
         .route("/subscriptions/confirm", get(confirm))

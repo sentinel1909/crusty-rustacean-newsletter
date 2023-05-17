@@ -204,7 +204,8 @@
 
 # 2023-05-16
 ## Steps Completed
-- finished up to the end of Chapter 10.5
+- finished up to the end of Chapter 10.6.3
 - Welcome page served from "/"
+- login form mocked up, login redirects back to "/"
 - all tests green
 
