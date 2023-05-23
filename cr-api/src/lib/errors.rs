@@ -129,6 +129,41 @@ impl IntoResponse for PublishError {
     }
 }
 
+// enum to represent an authentication error
+#[derive(thiserror::Error, Debug)]
+pub enum AuthError {
+    #[error("Invalid credentials.")]
+    InvalidCredentials(#[source] anyhow::Error),
+    #[error(transparent)]
+    UnexpectedError(#[from] anyhow::Error),
+}
+
+// enum to represent a login error
+#[derive(thiserror::Error)]
+pub enum LoginError {
+    #[error("Authentication failed")]
+    AuthError(#[source] anyhow::Error),
+    #[error("Something went wrong")]
+    UnexpectedError(#[from] anyhow::Error),
+}
+
+// implement the Display trait for LoginError
+impl std::fmt::Debug for LoginError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        error_chain_fmt(self, f)
+    }
+}
+
+impl IntoResponse for LoginError {
+    fn into_response(self) -> Response {
+        tracing::error!("{:?}", self);
+        match self {
+            LoginError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+            LoginError::AuthError(_) => StatusCode::UNAUTHORIZED.into_response(),
+        }
+    }
+}
+
 // helper function to nicely format the std::error::Error message chain
 fn error_chain_fmt(
     e: &impl std::error::Error,

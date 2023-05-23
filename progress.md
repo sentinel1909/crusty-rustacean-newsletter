@@ -209,3 +209,10 @@
 - login form mocked up, login redirects back to "/"
 - all tests green
 
+# 2023-05-22
+## Steps Completed
+- finished up to the beginin to "Query Parameters" (Chapter 10.6.4.2)
+- using Axum is a slog now, the work to figure out the conversions from Actix are almost out of reach, had to cheat by looking for hints in other repos
+- login form refuses invalid credentials and redirects to the /login page, with no explanation
+- all tests green
+
