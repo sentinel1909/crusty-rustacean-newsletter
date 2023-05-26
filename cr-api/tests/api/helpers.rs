@@ -2,9 +2,9 @@
 
 use argon2::password_hash::SaltString;
 use argon2::{Algorithm, Argon2, Params, PasswordHasher, Version};
-use cr_api_docker::configuration::{get_configuration, DatabaseSettings};
-use cr_api_docker::startup::{get_connection_pool, Application};
-use cr_api_docker::telemetry::{get_subscriber, init_subscriber};
+use cr_api::configuration::{get_configuration, DatabaseSettings};
+use cr_api::startup::{get_connection_pool, Application};
+use cr_api::telemetry::{get_subscriber, init_subscriber};
 use once_cell::sync::Lazy;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;

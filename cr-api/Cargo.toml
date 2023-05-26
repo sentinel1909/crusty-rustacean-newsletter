@@ -1,5 +1,5 @@
 [package]
-name = "cr-api-docker"
+name = "cr-api"
 version = "0.10.5"
 authors = ["Jeffery D. Mitchell", "<sentinel1909@protonmail.com>"]
 edition = "2021"
@@ -7,14 +7,14 @@ description = "API for the Crusty Rustacean Blog"
 readme = "README.md"
 repository = "https://github.com/sentinel1909/crusty-rustacean-api"
 license = "MIT"
-keywords = ["axum, shuttle"]
+keywords = ["axum, docker"]
 categories = ["api"]
 
 [lib]
 path = "src/lib/lib.rs"
 
 [[bin]]
-name = "cr_api_docker"
+name = "cr_api"
 path = "src/bin/main.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
