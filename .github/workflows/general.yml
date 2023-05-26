@@ -50,7 +50,7 @@ jobs:
           SKIP_DOCKER=true ./cr-api/scripts/init_db.sh
       - name: Check sqlx-data.json is up-to-date
         run: |
-          cd cr-api && cargo sqlx prepare --check -- --bin cr_api_docker
+          cd cr-api && cargo sqlx prepare --check -- --bin cr_api
       - name: Run tests
         run: cd cr-api && cargo test
 
