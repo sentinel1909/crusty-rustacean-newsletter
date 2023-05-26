@@ -211,8 +211,14 @@
 
 # 2023-05-22
 ## Steps Completed
-- finished up to the beginin to "Query Parameters" (Chapter 10.6.4.2)
+- finished up to the beginning of "Query Parameters" (Chapter 10.6.4.2)
 - using Axum is a slog now, the work to figure out the conversions from Actix are almost out of reach, had to cheat by looking for hints in other repos
 - login form refuses invalid credentials and redirects to the /login page, with no explanation
+- all tests green
+
+# 2023-05-22
+## Steps Completed
+- huge log jam get past Chapter 10.6.4.2, finally figured it out, just expand on the use of Redirect.
+- finished up to the end of Chapter 10.6.4.3
 - all tests green
 

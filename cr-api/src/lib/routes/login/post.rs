@@ -28,27 +28,14 @@ pub async fn login(
         password: login_data.0.password,
     };
 
-    tracing::Span::current().record("username", &tracing::field::display(&credentials.username));
+    let user_id = validate_credentials(credentials, &app_state.db_pool)
+        .await
+        .map_err(|e| match e {
+            AuthError::InvalidCredentials(_) => LoginError::AuthError(e.into()),
+            AuthError::UnexpectedError(_) => LoginError::UnexpectedError(e.into()),
+        })?;
 
-    let response = match validate_credentials(credentials, &app_state.db_pool).await {
-        Ok(user_id) => {
-            tracing::Span::current().record("user_id", &tracing::field::display(&user_id));
-            Redirect::to("/").into_response()
-        }
+    tracing::Span::current().record("user_id", &tracing::field::display(&user_id));
 
-        Err(e) => {
-            let e = match e {
-                AuthError::InvalidCredentials(_) => LoginError::AuthError(e.into()),
-                AuthError::UnexpectedError(_) => LoginError::UnexpectedError(e.into()),
-            };
-
-            tracing::error!("{:?}", &e);
-
-            let response = Redirect::to("/login").into_response();
-
-            response.into_response()
-        }
-    };
-
-    Ok(response)
+    Ok(Redirect::to("/"))
 }
