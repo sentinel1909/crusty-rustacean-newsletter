@@ -21,7 +21,7 @@ COPY /cr-api/. .
 
 ENV SQLX_OFFLINE true
 
-RUN cargo build -p cr-api-docker --release
+RUN cargo build -p cr-api --release
 
 # Runtime stage
 
@@ -31,10 +31,10 @@ WORKDIR /app
 
 RUN apt-get update -y && apt-get install -y --no-install-recommends openssl ca-certificates && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/target/release/cr_api_docker cr_api_docker
+COPY --from=builder /app/target/release/cr_api cr_api
 
 COPY cr-api/configuration configuration
 
 ENV APP_ENVIRONMENT production
 
-ENTRYPOINT ["./cr_api_docker"]
+ENTRYPOINT ["./cr_api"]
