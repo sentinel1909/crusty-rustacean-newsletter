@@ -3,7 +3,7 @@
 // dependencies
 use axum::{
     http::{HeaderValue, StatusCode},
-    response::{IntoResponse, Redirect, Response},
+    response::{IntoResponse, Response},
 };
 use hyper::header;
 
@@ -151,14 +151,6 @@ pub enum LoginError {
 impl std::fmt::Debug for LoginError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         error_chain_fmt(self, f)
-    }
-}
-
-impl IntoResponse for LoginError {
-    fn into_response(self) -> Response {
-        tracing::error!("{:?}", self);
-        let encoded_error = urlencoding::Encoded::new(self.to_string());
-        Redirect::to((format!("/login?error={}", encoded_error)).as_str()).into_response()
     }
 }
 

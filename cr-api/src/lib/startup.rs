@@ -9,12 +9,14 @@ use crate::routes::{
 };
 use crate::state::AppState;
 use crate::state::ApplicationBaseUrl;
+use crate::state::HmacSecret;
 use axum::{
     http::Request,
     routing::{get, post, IntoMakeService},
     Router, Server,
 };
 use hyper::server::conn::AddrIncoming;
+use secrecy::Secret;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::net::TcpListener;
@@ -76,6 +78,7 @@ impl Application {
             connection_pool,
             email_client,
             configuration.application.base_url,
+            configuration.application.hmac_secret,
         ) {
             Ok(app) => app,
             Err(error) => panic!("Could not spin up an app instance - {}", error),
@@ -108,6 +111,7 @@ pub fn run(
     pool: PgPool,
     email_client: EmailClient,
     base_url: String,
+    hmac_secret: Secret<String>,
 ) -> hyper::Result<App> {
     // routes and their corresponding handlers
     let app = Router::new()
@@ -136,6 +140,7 @@ pub fn run(
             pool,
             email_client,
             ApplicationBaseUrl(base_url),
+            HmacSecret(hmac_secret),
         ));
     let server = axum::Server::from_tcp(listener)?.serve(app.into_make_service());
     Ok(server)
