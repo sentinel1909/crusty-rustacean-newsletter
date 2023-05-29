@@ -222,3 +222,9 @@
 - finished up to the end of Chapter 10.6.4.3
 - all tests green
 
+# 2023-05-28
+## Steps completed
+- finished up to the end of Chapter 10.6.4.13
+- another log jam is in front of me, how to delete cookies per Chapter 10.6.4.13
+- all tests green
+
