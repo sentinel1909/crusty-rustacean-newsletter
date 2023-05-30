@@ -6,9 +6,9 @@ use crate::errors::{AuthError, LoginError};
 use crate::state::AppState;
 use axum::{
     extract::{Form, State},
-    http::{header, HeaderMap},
     response::{ErrorResponse, IntoResponse, Redirect},
 };
+use axum_flash::Flash;
 use secrecy::Secret;
 
 #[derive(serde::Deserialize)]
@@ -23,6 +23,7 @@ pub struct LoginData {
 )]
 pub async fn login(
     State(app_state): State<AppState>,
+    flash: Flash,
     login_data: Form<LoginData>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
     let credentials = Credentials {
@@ -40,11 +41,13 @@ pub async fn login(
                 AuthError::InvalidCredentials(_) => LoginError::AuthError(e.into()),
                 AuthError::UnexpectedError(_) => LoginError::UnexpectedError(e.into()),
             };
+            tracing::error!("{:?}", &e);
+
+            let flash = flash.error(e.to_string());
 
             let response = Redirect::to("/login").into_response();
-            let mut headers = HeaderMap::new();
-            headers.insert(header::SET_COOKIE, format!("_flash={e}").parse().unwrap());
-            Err(ErrorResponse::from((headers, response).into_response()))
+
+            Err(ErrorResponse::from((flash, response).into_response()))
         }
     }
 }

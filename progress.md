@@ -228,3 +228,10 @@
 - another log jam is in front of me, how to delete cookies per Chapter 10.6.4.13
 - all tests green
 
+# 2023-05-28
+## Steps completed
+- finished up to the end of Chapter 10.6
+- all tests green
+- I'm afraid I just don't understand cookie management in Axum
+- get thing working by just jumping to axum-flash, per [this repo](https://github.com/damccull/zero2prod) 
+

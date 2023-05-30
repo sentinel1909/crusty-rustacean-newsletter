@@ -1,6 +1,6 @@
 [package]
 name = "cr-api"
-version = "0.10.5"
+version = "0.10.6"
 authors = ["Jeffery D. Mitchell", "<sentinel1909@protonmail.com>"]
 edition = "2021"
 description = "API for the Crusty Rustacean Blog"
@@ -38,7 +38,6 @@ serde-aux = "4.1.2"
 thiserror = "1"
 tokio = { version = "1.26.0", features = [ "macros", "rt-multi-thread" ]}
 tower = "0.4.13"
-tower-cookies = "0.9.0"
 tower-http = { version = "0.4.0", features = [ "trace", "request-id", "util" ] }
 tracing = { version = "0.1.37", features = [ "log" ] }
 tracing-bunyan-formatter = "0.3.6"
@@ -49,6 +48,8 @@ uuid = { version = "1", features = ["v4"] }
 urlencoding = "2.1.2"
 validator = "0.16.0"
 cookie = "0.17.0"
+axum-flash = "0.7.0"
+axum-extra = "0.7.4"
 
 [dev-dependencies]
 claims = "0.7.1"
