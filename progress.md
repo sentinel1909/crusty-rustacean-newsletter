@@ -235,3 +235,10 @@
 - I'm afraid I just don't understand cookie management in Axum
 - get thing working by just jumping to axum-flash, per [this repo](https://github.com/damccull/zero2prod) 
 
+# 2023-05-28
+## Steps completed
+- have decided this is officially the end of the road for this project
+- I've read ahead and have judged that the rest of Chapter 10 is beyond my skill level
+- will leave this repo up to serve as a record/resource for those attempting to do the same thing
+- perhaps someday I'll return and finish
+
