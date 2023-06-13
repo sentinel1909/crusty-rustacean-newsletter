@@ -242,8 +242,3 @@
 - will leave this repo up to serve as a record/resource for those attempting to do the same thing
 - perhaps someday I'll return and finish
 
-# 2023-06-12
-## Steps completed
-- decided I can't quit when I'm nearing the end, there are essential concepts here I need to master
-- resumed with a bit of cleanup, will now pick up at Chapter 10.7
-
