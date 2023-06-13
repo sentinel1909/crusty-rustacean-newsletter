@@ -3,4 +3,5 @@ members = [
   "cr-api",
   "project-init"
 ]
+default-members = ["cr-api"]
 

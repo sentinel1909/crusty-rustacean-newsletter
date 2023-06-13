@@ -524,6 +524,7 @@ dependencies = [
  "axum",
  "axum-extra",
  "axum-flash",
+ "axum-macros",
  "axum_session",
  "base64 0.21.2",
  "chrono",

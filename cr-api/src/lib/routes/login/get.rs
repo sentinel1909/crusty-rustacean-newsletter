@@ -1,10 +1,15 @@
 // src/lib/routes/login/get.rs
 
+// dependencies
 use axum::{http::StatusCode, response::IntoResponse};
 use axum_extra::response::Html;
 use axum_flash::IncomingFlashes;
+use axum_macros::debug_handler;
 use std::fmt::Write;
 
+// login_form handler
+#[allow(clippy::let_with_type_underscore)]
+#[debug_handler(state = axum_flash::Config)]
 #[tracing::instrument(name = "Login form", skip(flashes))]
 pub async fn login_form(flashes: IncomingFlashes) -> impl IntoResponse {
     let mut error_html = String::new();

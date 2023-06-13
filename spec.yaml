@@ -1,4 +1,4 @@
-#! spec.yaml
+#! spec.yaml (for Digital Ocean deployment)
 name: cr-api
 region: tor1
 services:
