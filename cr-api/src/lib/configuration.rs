@@ -5,9 +5,10 @@ use crate::domain::SubscriberEmail;
 use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
-use sqlx::postgres::PgConnectOptions;
-use sqlx::postgres::PgSslMode;
-use sqlx::ConnectOptions;
+use sqlx::{
+    postgres::{PgConnectOptions, PgSslMode},
+    ConnectOptions,
+};
 use std::u16;
 
 // a struct to hold a type for settings
@@ -16,6 +17,13 @@ pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
     pub email_client: EmailClientSettings,
+    pub redis: RedisSettings,
+}
+
+// a struct to hold a type for the Redis related settings
+#[derive(Clone, Debug, Deserialize)]
+pub struct RedisSettings {
+    pub uri: Secret<String>,
 }
 
 // a struct to hold a type for application settings

@@ -7,7 +7,7 @@ use cr_api::telemetry::{get_subscriber, init_subscriber};
 
 // main function
 #[tokio::main]
-async fn main() -> hyper::Result<()> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // initialize tracing
     let subscriber = get_subscriber("cr-api".into(), "info".into(), std::io::stdout);
     init_subscriber(subscriber);

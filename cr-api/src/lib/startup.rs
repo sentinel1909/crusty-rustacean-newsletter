@@ -1,6 +1,12 @@
 //! src/lib/startup.rs
 
 // dependencies, external and internal
+use axum::{
+    http::Request,
+    routing::{get, post, IntoMakeService},
+    Router, Server,
+};
+use axum_session::{SessionConfig, SessionLayer, SessionRedisPool, SessionStore};
 use crate::configuration::DatabaseSettings;
 use crate::configuration::Settings;
 use crate::email_client::EmailClient;
@@ -10,13 +16,8 @@ use crate::routes::{
 use crate::state::AppState;
 use crate::state::ApplicationBaseUrl;
 use crate::state::HmacSecret;
-use axum::{
-    http::Request,
-    routing::{get, post, IntoMakeService},
-    Router, Server,
-};
 use hyper::server::conn::AddrIncoming;
-use secrecy::Secret;
+use secrecy::{Secret, ExposeSecret};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::net::TcpListener;
@@ -29,7 +30,7 @@ use tower_http::{
 use tracing::Level;
 use uuid::Uuid;
 
-pub type App = Server<AddrIncoming, IntoMakeService<Router>>;
+pub type AppServer = Server<AddrIncoming, IntoMakeService<Router>>;
 
 #[derive(Clone)]
 struct MakeRequestUuid;
@@ -45,14 +46,25 @@ impl MakeRequestId for MakeRequestUuid {
 // struct for an Application type
 pub struct Application {
     port: u16,
-    app: App,
+    app: AppServer,
 }
 
 // implementation block to create an instance of an Application
 impl Application {
     // function to build a new application instance
-    pub async fn build(configuration: Settings) -> Result<Self, hyper::Error> {
+    pub async fn build(configuration: Settings) -> Result<Self, anyhow::Error> {
+        // Get database pool
         let connection_pool = get_connection_pool(&configuration.database);
+        
+        // Build a redis connection
+        let redis = redis::Client::open(configuration.redis.uri.expose_secret().as_str())?;
+
+        // Create a session store
+        let session_config = SessionConfig::new();
+        let session_store =
+            SessionStore::<SessionRedisPool>::new(Some(redis.into()), session_config);
+        
+        // Build an email client
         let sender_email = configuration
             .email_client
             .sender()
@@ -64,6 +76,7 @@ impl Application {
             configuration.email_client.authorization_token,
             timeout,
         );
+
         let address = format!(
             "{}:{}",
             configuration.application.host, configuration.application.port
@@ -73,16 +86,14 @@ impl Application {
             Err(error) => panic!("Could not get a listener - {}", error),
         };
         let port = listener.local_addr().unwrap().port();
-        let app = match run(
+        let app = run(
             listener,
             connection_pool,
             email_client,
             configuration.application.base_url,
             configuration.application.hmac_secret,
-        ) {
-            Ok(app) => app,
-            Err(error) => panic!("Could not spin up an app instance - {}", error),
-        };
+            session_store,
+        );
 
         Ok(Self { port, app })
     }
@@ -112,7 +123,16 @@ pub fn run(
     email_client: EmailClient,
     base_url: String,
     hmac_secret: Secret<String>,
-) -> hyper::Result<App> {
+    session_store: SessionStore<SessionRedisPool>,
+) -> AppServer {
+    // build the app state
+    let app_state = AppState::create_state(
+            pool,
+            email_client,
+            ApplicationBaseUrl(base_url),
+            HmacSecret(hmac_secret)
+    );
+        
     // routes and their corresponding handlers
     let app = Router::new()
         .route("/", get(home))
@@ -122,6 +142,7 @@ pub fn run(
         .route("/subscriptions", post(subscribe))
         .route("/subscriptions/confirm", get(confirm))
         .route("/newsletters", post(publish_newsletter))
+        .layer(SessionLayer::new(session_store))
         .layer(
             ServiceBuilder::new()
                 .set_x_request_id(MakeRequestUuid)
@@ -136,12 +157,10 @@ pub fn run(
                 )
                 .propagate_x_request_id(),
         )
-        .with_state(AppState::create_state(
-            pool,
-            email_client,
-            ApplicationBaseUrl(base_url),
-            HmacSecret(hmac_secret),
-        ));
-    let server = axum::Server::from_tcp(listener)?.serve(app.into_make_service());
-    Ok(server)
+        .with_state(app_state);
+
+    // pass back the built server
+    axum::Server::from_tcp(listener)
+        .expect("Failed to create server from listener...")
+        .serve(app.into_make_service())
 }

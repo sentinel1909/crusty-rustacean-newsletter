@@ -242,3 +242,9 @@
 - will leave this repo up to serve as a record/resource for those attempting to do the same thing
 - perhaps someday I'll return and finish
 
+## 2023-06-15
+## Steps completed
+- have restarted, finished up to the end of Chapter 10.7.4
+- redis implemented for session storage
+- all tests green
+
