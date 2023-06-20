@@ -8,6 +8,7 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Redirect},
 };
+use axum_extra::response::Html;
 use axum_macros::debug_handler;
 use axum_session::{Session, SessionRedisPool};
 use sqlx::PgPool;
@@ -55,6 +56,6 @@ pub async fn admin_dashboard(
 </body>
 </html>"#
     );
-    let response = (StatusCode::OK, response_body).into_response();
-    Ok(response)
+    let response = Html((StatusCode::OK, response_body));
+    Ok(response.into_response())
 }

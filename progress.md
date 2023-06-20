@@ -253,3 +253,9 @@
 - mostly done Chapter 10.7
 - lost on how to implement the typed interface to Session
 
+# 2023-06-20
+## Steps completed
+- started on Chapter 10.8
+- login functionality for admin user works
+- tests green
+
