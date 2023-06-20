@@ -8,8 +8,8 @@ use axum::{
     extract::{Form, State},
     response::{ErrorResponse, IntoResponse, Redirect},
 };
-use axum_session::Session;
 use axum_flash::Flash;
+use axum_session::{Session, SessionRedisPool};
 use secrecy::Secret;
 
 // struct to represent the login data, including username and password
@@ -26,7 +26,7 @@ pub struct LoginData {
 pub async fn login(
     State(app_state): State<AppState>,
     flash: Flash,
-    session: Session,
+    session: Session<SessionRedisPool>,
     login_data: Form<LoginData>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
     let credentials = Credentials {
@@ -38,7 +38,7 @@ pub async fn login(
         Ok(user_id) => {
             tracing::Span::current().record("user_id", &tracing::field::display(&user_id));
             session.renew();
-            session.insert("user_id", user_id);
+            session.set("user_id", user_id);
             Ok(Redirect::to("/admin/dashboard"))
         }
         Err(e) => {

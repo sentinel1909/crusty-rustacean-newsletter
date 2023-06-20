@@ -24,7 +24,6 @@ use std::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::{
     request_id::{MakeRequestId, RequestId},
-    services::ServeDir,
     trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
     ServiceBuilderExt,
 };
@@ -162,7 +161,6 @@ pub fn run(
                 )
                 .propagate_x_request_id(),
         )
-        .nest_service("../assets", ServeDir::new("assets"))
         .with_state(app_state);
 
     // pass back the built server

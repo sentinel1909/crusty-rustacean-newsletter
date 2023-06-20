@@ -9,7 +9,7 @@ async fn you_must_be_logged_in_to_access_the_admin_dashboard() {
   let app = spawn_app().await;
 
   // Act
-  let response = app.get_admin_dashboard_html().await;
+  let response = app.get_admin_dashboard().await;
 
   // Assert
   assert_is_redirect_to(&response, "/login")

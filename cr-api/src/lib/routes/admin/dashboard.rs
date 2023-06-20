@@ -6,10 +6,10 @@ use anyhow::Context;
 use axum::{
     extract::State,
     http::StatusCode,
-    response::{Html, IntoResponse, Redirect},
+    response::{IntoResponse, Redirect},
 };
 use axum_macros::debug_handler;
-use axum_session::Session;
+use axum_session::{Session, SessionRedisPool};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -31,19 +31,20 @@ async fn get_username(user_id: Uuid, pool: &PgPool) -> Result<String, anyhow::Er
 
 #[debug_handler]
 pub async fn admin_dashboard(
-    session: Session,
+    session: Session<SessionRedisPool>,
     State(app_state): State<AppState>,
 ) -> Result<impl IntoResponse, ResponseInternalServerError<anyhow::Error>> {
-    let username = if let Some(user_id) = session.get::<Uuid>("user_id").map_err(e500)?
-    {
-        get_username(user_id, &app_state.db_pool).await.map_err(e500)?
+    let username = if let Some(user_id) = session.get::<Uuid>("user_id") {
+        get_username(user_id, &app_state.db_pool)
+            .await
+            .map_err(e500)?
     } else {
-        return Ok(Redirect::to("/login"));
+        let response = Redirect::to("/login");
+        return Ok(response.into_response());
     };
-    let response = Html((
-        StatusCode::OK,
-        format!(
-            r#"<!DOCTYPE html>
+
+    let response_body = format!(
+        r#"<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -53,7 +54,7 @@ pub async fn admin_dashboard(
 <p>Welcome {username}!</p>
 </body>
 </html>"#
-        ),
-    ));
-    Ok(response.into_response())
+    );
+    let response = (StatusCode::OK, response_body).into_response();
+    Ok(response)
 }
