@@ -154,6 +154,25 @@ impl std::fmt::Debug for LoginError {
     }
 }
 
+#[derive(Debug, thiserror::Error)]
+#[error(transparent)]
+pub struct ResponseInternalServerError<T>(#[from] T);
+
+impl<T: std::fmt::Debug> IntoResponse for ResponseInternalServerError<T> {
+    fn into_response(self) -> axum::response::Response {
+        tracing::error!("{:?}", self);
+        StatusCode::INTERNAL_SERVER_ERROR.into_response()
+    }
+}
+
+// return an opaque 500 while preserving the error's root cause for logging
+pub fn e500<T>(e: T) -> ResponseInternalServerError<T>
+where
+    T: std::fmt::Debug + std::fmt::Display + 'static,
+{
+    ResponseInternalServerError::from(e)
+}
+
 // helper function to nicely format the std::error::Error message chain
 fn error_chain_fmt(
     e: &impl std::error::Error,

@@ -1,5 +1,7 @@
 // src/lib/state.rs
 
+// everything related to state, including associated types and implementations
+
 // dependencies
 use crate::email_client::EmailClient;
 use axum::extract::FromRef;
@@ -14,7 +16,7 @@ pub struct ApplicationBaseUrl(pub String);
 #[derive(Debug, Clone)]
 pub struct HmacSecret(pub Secret<String>);
 
-// struct for the AppState type
+// struct for the AppState type, derives Clone as well as FromRef
 #[derive(Clone, Debug, FromRef)]
 pub struct AppState {
     pub db_pool: PgPool,
@@ -23,7 +25,7 @@ pub struct AppState {
     pub flash_config: axum_flash::Config,
 }
 
-// implementation block for AppState, create a state using a database pool, email client, and application base url
+// implementation block for AppState, create a state using a database pool, email client, application base url, and flash message config
 impl AppState {
     pub fn create_state(
         pool: PgPool,

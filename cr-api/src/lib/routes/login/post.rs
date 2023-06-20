@@ -8,9 +8,11 @@ use axum::{
     extract::{Form, State},
     response::{ErrorResponse, IntoResponse, Redirect},
 };
+use axum_session::Session;
 use axum_flash::Flash;
 use secrecy::Secret;
 
+// struct to represent the login data, including username and password
 #[derive(serde::Deserialize)]
 pub struct LoginData {
     username: String,
@@ -18,12 +20,13 @@ pub struct LoginData {
 }
 
 #[tracing::instrument(
-    skip(login_data, app_state),
+    skip(login_data, app_state, session),
     fields(username=tracing::field::Empty, user_id=tracing::field::Empty)
 )]
 pub async fn login(
     State(app_state): State<AppState>,
     flash: Flash,
+    session: Session,
     login_data: Form<LoginData>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
     let credentials = Credentials {
@@ -34,7 +37,9 @@ pub async fn login(
     match validate_credentials(credentials, &app_state.db_pool).await {
         Ok(user_id) => {
             tracing::Span::current().record("user_id", &tracing::field::display(&user_id));
-            Ok(Redirect::to("/"))
+            session.renew();
+            session.insert("user_id", user_id);
+            Ok(Redirect::to("/admin/dashboard"))
         }
         Err(e) => {
             let e = match e {

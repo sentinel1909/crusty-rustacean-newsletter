@@ -1,40 +1,44 @@
 //! src/lib/startup.rs
 
 // dependencies, external and internal
+use crate::configuration::DatabaseSettings;
+use crate::configuration::Settings;
+use crate::email_client::EmailClient;
+use crate::routes::{
+    admin_dashboard, confirm, health_check, home, login, login_form, publish_newsletter, subscribe,
+};
+use crate::state::AppState;
+use crate::state::ApplicationBaseUrl;
+use crate::state::HmacSecret;
 use axum::{
     http::Request,
     routing::{get, post, IntoMakeService},
     Router, Server,
 };
 use axum_session::{SessionConfig, SessionLayer, SessionRedisPool, SessionStore};
-use crate::configuration::DatabaseSettings;
-use crate::configuration::Settings;
-use crate::email_client::EmailClient;
-use crate::routes::{
-    confirm, health_check, home, login, login_form, publish_newsletter, subscribe,
-};
-use crate::state::AppState;
-use crate::state::ApplicationBaseUrl;
-use crate::state::HmacSecret;
 use hyper::server::conn::AddrIncoming;
-use secrecy::{Secret, ExposeSecret};
+use secrecy::{ExposeSecret, Secret};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::{
     request_id::{MakeRequestId, RequestId},
+    services::ServeDir,
     trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
     ServiceBuilderExt,
 };
 use tracing::Level;
 use uuid::Uuid;
 
+// type declaration for the AppServer type
 pub type AppServer = Server<AddrIncoming, IntoMakeService<Router>>;
 
+// a struct to represent a RequestUuid
 #[derive(Clone)]
 struct MakeRequestUuid;
 
+// implementation clock to create a RequestId
 impl MakeRequestId for MakeRequestUuid {
     fn make_request_id<B>(&mut self, _: &Request<B>) -> Option<RequestId> {
         let request_id = Uuid::new_v4().to_string();
@@ -55,15 +59,15 @@ impl Application {
     pub async fn build(configuration: Settings) -> Result<Self, anyhow::Error> {
         // Get database pool
         let connection_pool = get_connection_pool(&configuration.database);
-        
+
         // Build a redis connection
         let redis = redis::Client::open(configuration.redis.uri.expose_secret().as_str())?;
 
-        // Create a session store
+        // Create a Redis session store
         let session_config = SessionConfig::new();
         let session_store =
             SessionStore::<SessionRedisPool>::new(Some(redis.into()), session_config);
-        
+
         // Build an email client
         let sender_email = configuration
             .email_client
@@ -127,13 +131,13 @@ pub fn run(
 ) -> AppServer {
     // build the app state
     let app_state = AppState::create_state(
-            pool,
-            email_client,
-            ApplicationBaseUrl(base_url),
-            HmacSecret(hmac_secret)
+        pool,
+        email_client,
+        ApplicationBaseUrl(base_url),
+        HmacSecret(hmac_secret),
     );
-        
-    // routes and their corresponding handlers
+
+    // routes and their corresponding handlers, including setup of the Redis session, tracing, and state
     let app = Router::new()
         .route("/", get(home))
         .route("/login", get(login_form))
@@ -142,6 +146,7 @@ pub fn run(
         .route("/subscriptions", post(subscribe))
         .route("/subscriptions/confirm", get(confirm))
         .route("/newsletters", post(publish_newsletter))
+        .route("/admin/dashboard", get(admin_dashboard))
         .layer(SessionLayer::new(session_store))
         .layer(
             ServiceBuilder::new()
@@ -157,6 +162,7 @@ pub fn run(
                 )
                 .propagate_x_request_id(),
         )
+        .nest_service("../assets", ServeDir::new("assets"))
         .with_state(app_state);
 
     // pass back the built server

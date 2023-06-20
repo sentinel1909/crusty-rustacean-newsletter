@@ -23,7 +23,7 @@ pub async fn login_form(flashes: IncomingFlashes) -> impl IntoResponse {
         .unwrap();
     }
 
-    let body_response = Html((
+    let response = Html((
         StatusCode::OK,
         format!(
             r#"
@@ -53,5 +53,5 @@ pub async fn login_form(flashes: IncomingFlashes) -> impl IntoResponse {
         ),
     ));
 
-    (flashes, body_response)
+    (flashes, response)
 }

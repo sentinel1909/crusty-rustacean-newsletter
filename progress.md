@@ -248,3 +248,8 @@
 - redis implemented for session storage
 - all tests green
 
+# 2023-06-19
+## Steps completed
+- mostly done Chapter 10.7
+- lost on how to implement the typed interface to Session
+
