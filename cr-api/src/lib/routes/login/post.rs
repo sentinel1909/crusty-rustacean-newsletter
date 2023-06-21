@@ -3,13 +3,13 @@
 // dependencies
 use crate::authentication::{validate_credentials, Credentials};
 use crate::errors::{AuthError, LoginError};
+use crate::session_state::TypedSession;
 use crate::state::AppState;
 use axum::{
     extract::{Form, State},
     response::{ErrorResponse, IntoResponse, Redirect},
 };
 use axum_flash::Flash;
-use axum_session::{Session, SessionRedisPool};
 use secrecy::Secret;
 
 // struct to represent the login data, including username and password
@@ -26,7 +26,7 @@ pub struct LoginData {
 pub async fn login(
     State(app_state): State<AppState>,
     flash: Flash,
-    session: Session<SessionRedisPool>,
+    session: TypedSession,
     login_data: Form<LoginData>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
     let credentials = Credentials {
@@ -38,7 +38,7 @@ pub async fn login(
         Ok(user_id) => {
             tracing::Span::current().record("user_id", &tracing::field::display(&user_id));
             session.renew();
-            session.set("user_id", user_id);
+            session.insert_user_id(user_id);
             Ok(Redirect::to("/admin/dashboard"))
         }
         Err(e) => {

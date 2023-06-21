@@ -257,5 +257,8 @@
 ## Steps completed
 - started on Chapter 10.8
 - login functionality for admin user works
+- code base general clean up and adding of comments
+- began to add Askama templates for rendering of HTML (rather than static strings)
+- added assets directory to hold CSS and other files
 - tests green
 

@@ -1,6 +1,7 @@
 // src/lib/routes/admin/dashboard.rs
 
 use crate::errors::{e500, ResponseInternalServerError};
+use crate::session_state::TypedSession;
 use crate::state::AppState;
 use anyhow::Context;
 use axum::{
@@ -10,7 +11,6 @@ use axum::{
 };
 use axum_extra::response::Html;
 use axum_macros::debug_handler;
-use axum_session::{Session, SessionRedisPool};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -32,10 +32,10 @@ async fn get_username(user_id: Uuid, pool: &PgPool) -> Result<String, anyhow::Er
 
 #[debug_handler]
 pub async fn admin_dashboard(
-    session: Session<SessionRedisPool>,
+    session: TypedSession,
     State(app_state): State<AppState>,
 ) -> Result<impl IntoResponse, ResponseInternalServerError<anyhow::Error>> {
-    let username = if let Some(user_id) = session.get::<Uuid>("user_id") {
+    let username = if let Some(user_id) = session.get_user_id() {
         get_username(user_id, &app_state.db_pool)
             .await
             .map_err(e500)?

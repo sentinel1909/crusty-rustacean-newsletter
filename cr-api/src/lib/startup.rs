@@ -1,4 +1,6 @@
-//! src/lib/startup.rs
+// src/lib/startup.rs
+
+// configure and build an application instance
 
 // dependencies, external and internal
 use crate::configuration::DatabaseSettings;
@@ -24,6 +26,7 @@ use std::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::{
     request_id::{MakeRequestId, RequestId},
+    services::ServeDir,
     trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
     ServiceBuilderExt,
 };
@@ -136,7 +139,7 @@ pub fn run(
         HmacSecret(hmac_secret),
     );
 
-    // routes and their corresponding handlers, including setup of the Redis session, tracing, and state
+    // routes and their corresponding handlers, including setup of the Redis session, tracing, state and static assets such as css
     let app = Router::new()
         .route("/", get(home))
         .route("/login", get(login_form))
@@ -161,7 +164,8 @@ pub fn run(
                 )
                 .propagate_x_request_id(),
         )
-        .with_state(app_state);
+        .with_state(app_state)
+        .nest_service("/assets", ServeDir::new("assets"));
 
     // pass back the built server
     axum::Server::from_tcp(listener)

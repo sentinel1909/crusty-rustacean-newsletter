@@ -1,10 +1,15 @@
 // src/lib/domain/subscriber_email.rs
 
+// domain subscriber email type
+
+// dependencies
 use validator::validate_email;
 
+// a struct to represent a subscriber email type
 #[derive(Debug, Clone)]
 pub struct SubscriberEmail(String);
 
+// impl block for the subscriber email type; contains a method to validate subscriber emails
 impl SubscriberEmail {
     pub fn parse(s: String) -> Result<SubscriberEmail, String> {
         if validate_email(&s) {
@@ -15,12 +20,14 @@ impl SubscriberEmail {
     }
 }
 
+// impl block to return the inner value of the subscriber email type
 impl AsRef<str> for SubscriberEmail {
     fn as_ref(&self) -> &str {
         &self.0
     }
 }
 
+// impl block to implement the Display trait for the subscriber email type
 impl std::fmt::Display for SubscriberEmail {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // We just forward to the Display implementation of
@@ -29,6 +36,7 @@ impl std::fmt::Display for SubscriberEmail {
     }
 }
 
+// unit tests for the subscriber email type
 #[cfg(test)]
 mod tests {
     use super::SubscriberEmail;

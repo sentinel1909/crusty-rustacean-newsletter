@@ -1,10 +1,15 @@
-// src/domain.rs
+// src/domain/subscriber_name.rs
 
+// domain subscriber name type
+
+// dependencies
 use unicode_segmentation::UnicodeSegmentation;
 
+// a struct to represent a subscriber name type
 #[derive(Debug)]
 pub struct SubscriberName(String);
 
+// impl block for the subscriber name type; has a parse method which checks that the subscriber name is valid
 impl SubscriberName {
     pub fn parse(s: String) -> Result<SubscriberName, String> {
         let is_empty_or_whitespace = s.trim().is_empty();
@@ -20,12 +25,14 @@ impl SubscriberName {
     }
 }
 
+// impl block to get the inner value of the subscriber type
 impl AsRef<str> for SubscriberName {
     fn as_ref(&self) -> &str {
         &self.0
     }
 }
 
+// unit tests for the subscriber type
 #[cfg(test)]
 mod tests {
     use crate::domain::SubscriberName;
