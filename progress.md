@@ -255,6 +255,7 @@
 
 # 2023-06-20
 ## Steps completed
+- finished Chapter 10.7 and added TypedSession (replaces axum_session::Session)
 - started on Chapter 10.8
 - login functionality for admin user works
 - code base general clean up and adding of comments
