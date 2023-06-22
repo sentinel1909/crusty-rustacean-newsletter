@@ -9,3 +9,8 @@ use askama::Template;
 #[derive(Template)]
 #[template(path = "home.html")]
 pub struct HomeTemplate;
+
+// struct to represent the change password form template
+#[derive(Template)]
+#[template(path = "change_password_form.html")]
+pub struct ChangePasswordTemplate;

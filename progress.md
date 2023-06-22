@@ -263,3 +263,8 @@
 - added assets directory to hold CSS and other files
 - tests green
 
+# 2023-06-21
+## Steps completed
+- finished up to Chapter 10.8.2.1
+- all tests green
+
