@@ -171,6 +171,10 @@ impl TestApp {
             .await
             .expect("Failed to execute request.")
     }
+
+    pub async fn get_change_password_html(&self) -> String {
+self.get_change_password().await.text().await.unwrap()
+    }
 }
 
 /// Spin up an instance of our application
