@@ -97,6 +97,46 @@ async fn current_password_must_be_valid() {
 }
 
 #[tokio::test]
+async fn new_password_must_be_correct_length() {
+    // Arrange
+    let app = spawn_app().await;
+
+    let test_cases = vec![
+        "99ds09a",
+        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdefd"
+    ];
+
+    for case in test_cases {
+        // Act - Part 1 - Login
+        app.post_login(&serde_json::json!({
+            "username": &app.test_user.username,
+            "password": &app.test_user.password,
+        }))
+        .await;
+
+        // Act - Part 2 - Try to change password
+        let response = app
+            .post_change_password(&serde_json::json!({
+                "current_password": &app.test_user.password,
+                "new_password": &case,
+                "new_password_check": &case,
+            }))
+            .await;
+
+        // Assert - Part 2
+        assert_is_redirect_to(&response, "/admin/password");
+
+        // Act - Part 3 - Follow the redirect
+        let html_page = app.get_change_password_html().await;
+
+        // Assert - Part 3
+        assert!(
+            html_page.contains("The new password should be between 12 and 128 characters long.")
+        );
+    }
+}
+
+#[tokio::test]
 async fn changing_password_works() {
     // Arrange
     let app = spawn_app().await;

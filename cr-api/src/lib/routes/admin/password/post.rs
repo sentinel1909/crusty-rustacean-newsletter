@@ -26,6 +26,14 @@ pub async fn change_password(
     session: TypedSession,
     password_data: Form<PasswordData>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
+    // Ensure the new password is the correct length
+    if password_data.new_password.expose_secret().len() < 12
+        || password_data.new_password.expose_secret().len() > 128
+    {
+        let flash = flash.error("The new password should be between 12 and 128 characters long.");
+        return Ok((flash, Redirect::to("/admin/password")).into_response());
+    }
+
     //
     let user_id = session.get_user_id();
     if user_id.is_none() {

@@ -275,3 +275,9 @@
 - flash messages are showing up correctly, but I'm seeing cases where maybe they're not clearing properly, will have to monitor
 - all tests green
 
+# 2023-06-25
+## Steps completed
+- added password length check to admin/password/post route, to fully finish out Chapter 10.8
+- added associated test for password length check
+- all tests green
+
