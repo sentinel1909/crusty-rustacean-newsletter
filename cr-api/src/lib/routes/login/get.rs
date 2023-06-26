@@ -21,9 +21,7 @@ pub async fn login_form(flashes: IncomingFlashes) -> impl IntoResponse {
     }
 
     // render the login page, errors regarding login failure are posted as a flash message
-    let template = LoginTemplate {
-        flash_msg: flash_msg,
-    };
+    let template = LoginTemplate { flash_msg };
     match template.render() {
         Ok(html) => Html(html).into_response(),
         Err(_) => (StatusCode::NOT_FOUND, "page not found").into_response(),
