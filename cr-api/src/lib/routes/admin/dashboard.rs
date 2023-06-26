@@ -1,9 +1,12 @@
 // src/lib/routes/admin/dashboard.rs
 
+// dependencies
+use crate::domain::AdminDashboard;
 use crate::errors::{e500, ResponseInternalServerError};
 use crate::session_state::TypedSession;
 use crate::state::AppState;
 use anyhow::Context;
+use askama::Template;
 use axum::{
     extract::State,
     http::StatusCode,
@@ -15,7 +18,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 #[tracing::instrument(name = "Get username", skip(pool))]
-async fn get_username(user_id: Uuid, pool: &PgPool) -> Result<String, anyhow::Error> {
+pub async fn get_username(user_id: Uuid, pool: &PgPool) -> Result<String, anyhow::Error> {
     let row = sqlx::query!(
         r#"
         SELECT username
@@ -35,6 +38,7 @@ pub async fn admin_dashboard(
     session: TypedSession,
     State(app_state): State<AppState>,
 ) -> Result<impl IntoResponse, ResponseInternalServerError<anyhow::Error>> {
+    // check the logged in user has a matching session, redirect to the login page if they don't
     let username = if let Some(user_id) = session.get_user_id() {
         get_username(user_id, &app_state.db_pool)
             .await
@@ -44,22 +48,10 @@ pub async fn admin_dashboard(
         return Ok(response.into_response());
     };
 
-    let response_body = format!(
-        r#"<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta http-equiv="content-type" content="text/html; charset=utf-8">
-<title>Admin dashboard</title>
-</head>
-<body>
-<p>Welcome {username}!</p>
-<p>Available actions:</p>
-<ol>
-        <li><a href="/admin/password">Change password</a></li>
-</ol>
-</body>
-</html>"#
-    );
-    let response = Html((StatusCode::OK, response_body));
-    Ok(response.into_response())
+    // render the admin dashboard page
+    let template = AdminDashboard { username: username };
+    match template.render() {
+        Ok(html) => Ok(Html(html).into_response()),
+        Err(_) => Ok((StatusCode::NOT_FOUND, "page not found").into_response()),
+    }
 }

@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crusty Rustacean API - Login</title>
 </head>
-<body>
+<body> 
+  {{ flash_msg }}
+  <header>
+    <h2>Crusty Rustacean API - User Login</h2>
+    <p>Enter your username and password to login:</p>
+  </header>
   <form action="/login" method="post">
     <label>Username
       <input

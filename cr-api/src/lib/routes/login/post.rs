@@ -19,6 +19,7 @@ pub struct LoginData {
     password: Secret<String>,
 }
 
+// handler to process results received from the login form
 #[tracing::instrument(
     skip(login_data, app_state, session),
     fields(username=tracing::field::Empty, user_id=tracing::field::Empty)
@@ -50,7 +51,7 @@ pub async fn login(
 
             let flash = flash.error(e.to_string());
 
-            let response = Redirect::to("/login").into_response();
+            let response = Redirect::to("/login");
 
             Err(ErrorResponse::from((flash, response).into_response()))
         }

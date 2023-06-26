@@ -4,7 +4,7 @@ use axum_macros::FromRequestParts;
 use axum_session::{Session, SessionRedisPool};
 use uuid::Uuid;
 
-#[derive(FromRequestParts)]
+#[derive(Debug, FromRequestParts)]
 pub struct TypedSession(Session<SessionRedisPool>);
 
 impl TypedSession {
@@ -20,5 +20,9 @@ impl TypedSession {
 
     pub fn get_user_id(&self) -> Option<Uuid> {
         self.0.get(Self::USER_ID_KEY)
+    }
+
+    pub fn log_out(self) {
+        self.0.destroy()
     }
 }

@@ -268,3 +268,10 @@
 - finished up to Chapter 10.8.2.1
 - all tests green
 
+# 2023-06-25
+## Steps completed
+- finished up to Chapter 10.9
+- Askama template conversion complete for all API endpoints
+- flash messages are showing up correctly, but I'm seeing cases where maybe they're not clearing properly, will have to monitor
+- all tests green
+

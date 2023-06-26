@@ -1,11 +1,16 @@
 // src/routes/admin/password/post.rs
 
-use crate::{errors::ResponseInternalServerError, session_state::TypedSession};
+use crate::authentication::{validate_credentials, Credentials};
+use crate::errors::{e500, AuthError};
+use crate::routes::admin::dashboard::get_username;
+use crate::session_state::TypedSession;
+use crate::state::AppState;
 use axum::{
-    extract::Form,
-    response::{IntoResponse, Redirect},
+    extract::{Form, State},
+    response::{ErrorResponse, IntoResponse, Redirect},
 };
-use secrecy::{Secret, ExposeSecret};
+use axum_flash::Flash;
+use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -16,17 +21,56 @@ pub struct PasswordData {
 }
 
 pub async fn change_password(
+    State(app_state): State<AppState>,
+    flash: Flash,
     session: TypedSession,
     password_data: Form<PasswordData>,
-) -> Result<impl IntoResponse, ResponseInternalServerError<anyhow::Error>> {
-    if session.get_user_id().is_none() {
+) -> Result<impl IntoResponse, ErrorResponse> {
+    //
+    let user_id = session.get_user_id();
+    if user_id.is_none() {
         let response = Redirect::to("/login");
         return Ok(response.into_response());
     }
-    if password_data.new_password.expose_secret() != password_data.new_password_check.expose_secret() {
+    let user_id = user_id.unwrap();
+
+    if password_data.new_password.expose_secret()
+        != password_data.new_password_check.expose_secret()
+    {
+        let flash =
+            flash.error("You entered two different new passwords - the field values must match.");
         let response = Redirect::to("/admin/password");
-        return Ok(response.into_response());
+        return Ok((flash, response).into_response());
     }
-    
-    todo!()
+
+    let username = get_username(user_id, &app_state.db_pool)
+        .await
+        .map_err(e500)?;
+
+    let credentials = Credentials {
+        username,
+        password: password_data.0.current_password,
+    };
+
+    if let Err(e) = validate_credentials(credentials, &app_state.db_pool).await {
+        return match e {
+            AuthError::InvalidCredentials(_) => {
+                let flash = flash.error("The current password is incorrect.");
+                let response = Redirect::to("/admin/password");
+                Ok((flash, response).into_response())
+            }
+            AuthError::UnexpectedError(_) => Err(e500(e).into()),
+        };
+    }
+
+    crate::authentication::change_password(
+        user_id,
+        password_data.0.new_password,
+        &app_state.db_pool,
+    )
+    .await
+    .map_err(e500)?;
+    let flash = flash.info("Your password has been changed.");
+    let response = Redirect::to("/admin/password");
+    Ok((flash, response).into_response())
 }

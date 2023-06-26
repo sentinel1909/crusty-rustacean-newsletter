@@ -7,8 +7,8 @@ use crate::configuration::DatabaseSettings;
 use crate::configuration::Settings;
 use crate::email_client::EmailClient;
 use crate::routes::{
-    admin_dashboard, change_password, change_password_form, confirm, health_check, home, login,
-    login_form, publish_newsletter, subscribe,
+    admin_dashboard, change_password, change_password_form, confirm, health_check, home, log_out,
+    login, login_form, publish_newsletter, subscribe,
 };
 use crate::state::AppState;
 use crate::state::ApplicationBaseUrl;
@@ -152,6 +152,7 @@ pub fn run(
         .route("/admin/dashboard", get(admin_dashboard))
         .route("/admin/password", get(change_password_form))
         .route("/admin/password", post(change_password))
+        .route("/admin/logout", post(log_out))
         .layer(SessionLayer::new(session_store))
         .layer(
             ServiceBuilder::new()
