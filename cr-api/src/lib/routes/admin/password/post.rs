@@ -1,13 +1,14 @@
 // src/routes/admin/password/post.rs
 
+use crate::authentication::UserId;
 use crate::authentication::{validate_credentials, Credentials};
 use crate::errors::{e500, AuthError};
 use crate::routes::admin::dashboard::get_username;
-use crate::session_state::TypedSession;
 use crate::state::AppState;
 use axum::{
     extract::{Form, State},
     response::{ErrorResponse, IntoResponse, Redirect},
+    Extension,
 };
 use axum_flash::Flash;
 use secrecy::{ExposeSecret, Secret};
@@ -20,10 +21,11 @@ pub struct PasswordData {
     new_password_check: Secret<String>,
 }
 
+// change password handler
 pub async fn change_password(
-    State(app_state): State<AppState>,
     flash: Flash,
-    session: TypedSession,
+    Extension(user_id): Extension<UserId>,
+    State(app_state): State<AppState>,
     password_data: Form<PasswordData>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
     // Ensure the new password is the correct length
@@ -34,14 +36,7 @@ pub async fn change_password(
         return Ok((flash, Redirect::to("/admin/password")).into_response());
     }
 
-    //
-    let user_id = session.get_user_id();
-    if user_id.is_none() {
-        let response = Redirect::to("/login");
-        return Ok(response.into_response());
-    }
-    let user_id = user_id.unwrap();
-
+    // check that entered passwords have the same value
     if password_data.new_password.expose_secret()
         != password_data.new_password_check.expose_secret()
     {
@@ -51,7 +46,8 @@ pub async fn change_password(
         return Ok((flash, response).into_response());
     }
 
-    let username = get_username(user_id, &app_state.db_pool)
+    // authenticate the user, let them through to the admin dashboard if their credentials are correct
+    let username = get_username(*user_id, &app_state.db_pool)
         .await
         .map_err(e500)?;
 
@@ -71,14 +67,15 @@ pub async fn change_password(
         };
     }
 
+    // change the user's password
     crate::authentication::change_password(
-        user_id,
+        *user_id,
         password_data.0.new_password,
         &app_state.db_pool,
     )
     .await
     .map_err(e500)?;
-    let flash = flash.info("Your password has been changed.");
+    let flash = flash.error("Your password has been changed.");
     let response = Redirect::to("/admin/password");
     Ok((flash, response).into_response())
 }

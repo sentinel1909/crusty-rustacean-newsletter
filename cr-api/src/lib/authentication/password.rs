@@ -1,4 +1,4 @@
-// src/authentication.rs
+// src/lib/authentication/password.rs
 
 // dependencies
 use crate::errors::AuthError;

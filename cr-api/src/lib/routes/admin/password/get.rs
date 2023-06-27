@@ -9,7 +9,7 @@ use axum::{
     response::{IntoResponse, Redirect},
 };
 use axum_extra::response::Html;
-use axum_flash::IncomingFlashes;
+use axum_flash::{IncomingFlashes, Level};
 use axum_macros::debug_handler;
 use std::fmt::Write;
 
@@ -28,17 +28,15 @@ pub async fn change_password_form(
     }
 
     // process any incoming flash messages and convert them to a string for rendering
-    let mut error_msg = String::new();
-    for (level, text) in flashes.iter() {
-        writeln!(error_msg, "{:?}: {}\n", level, text).unwrap();
+    let mut flash_msg = String::new();
+    for (level, text) in flashes.iter().filter(|m| m.0 == Level::Error) {
+        writeln!(flash_msg, "{:?}: {}\n", level, text).unwrap();
     }
 
     // render the change password form, given that there is a valid user session, display any error message
-    let template = ChangePasswordTemplate {
-        flash_msg: error_msg,
-    };
+    let template = ChangePasswordTemplate { flash_msg };
     match template.render() {
-        Ok(html) => Ok(Html(html).into_response()),
+        Ok(body) => Ok(Html((StatusCode::OK, body)).into_response()),
         Err(_) => Ok((StatusCode::NOT_FOUND, "page not found").into_response()),
     }
 }

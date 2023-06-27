@@ -3,6 +3,7 @@
 // configure and build an application instance
 
 // dependencies, external and internal
+use crate::authentication::reject_anonymous_users;
 use crate::configuration::DatabaseSettings;
 use crate::configuration::Settings;
 use crate::email_client::EmailClient;
@@ -15,6 +16,7 @@ use crate::state::ApplicationBaseUrl;
 use crate::state::HmacSecret;
 use axum::{
     http::Request,
+    middleware,
     routing::{get, post, IntoMakeService},
     Router, Server,
 };
@@ -141,19 +143,35 @@ pub fn run(
     );
 
     // routes and their corresponding handlers, including setup of the Redis session, tracing, state and static assets such as css
-    let app = Router::new()
-        .route("/", get(home))
-        .route("/login", get(login_form))
-        .route("/login", post(login))
-        .route("/health_check", get(health_check))
-        .route("/subscriptions", post(subscribe))
-        .route("/subscriptions/confirm", get(confirm))
-        .route("/newsletters", post(publish_newsletter))
+
+    // routes that don't need session support
+    let router_no_session = Router::new().route("/health_check", get(health_check));
+
+    // admin routes
+    let router_for_admin_section = Router::new()
         .route("/admin/dashboard", get(admin_dashboard))
         .route("/admin/password", get(change_password_form))
         .route("/admin/password", post(change_password))
         .route("/admin/logout", post(log_out))
-        .layer(SessionLayer::new(session_store))
+        .layer(middleware::from_fn(reject_anonymous_users))
+        .layer(SessionLayer::new(session_store));
+
+    // non-admin routes
+    let router_for_non_admin_routes = Router::new()
+        .route("/", get(home))
+        .route("/login", get(login_form))
+        .route("/login", post(login))
+        .route("/newsletters", post(publish_newsletter))
+        .route("/subscriptions", post(subscribe))
+        .route("/subscriptions/confirm", get(confirm));
+
+    // master router
+    let app = Router::new()
+        .merge(
+            router_no_session
+                .merge(router_for_admin_section)
+                .merge(router_for_non_admin_routes),
+        )
         .layer(
             ServiceBuilder::new()
                 .set_x_request_id(MakeRequestUuid)

@@ -7,9 +7,10 @@ use crate::session_state::TypedSession;
 use crate::state::AppState;
 use axum::{
     extract::{Form, State},
-    response::{ErrorResponse, IntoResponse, Redirect},
+    response::{IntoResponse, Redirect},
 };
 use axum_flash::Flash;
+use axum_macros::debug_handler;
 use secrecy::Secret;
 
 // struct to represent the login data, including username and password
@@ -20,6 +21,7 @@ pub struct LoginData {
 }
 
 // handler to process results received from the login form
+#[debug_handler(state = crate::state::AppState)]
 #[tracing::instrument(
     skip(login_data, app_state, session),
     fields(username=tracing::field::Empty, user_id=tracing::field::Empty)
@@ -29,18 +31,20 @@ pub async fn login(
     flash: Flash,
     session: TypedSession,
     login_data: Form<LoginData>,
-) -> Result<impl IntoResponse, ErrorResponse> {
+) -> Result<impl IntoResponse, LoginError> {
+    // build an instance of the credentials struct using the received form data (username and password)
     let credentials = Credentials {
         username: login_data.0.username,
         password: login_data.0.password,
     };
 
-    match validate_credentials(credentials, &app_state.db_pool).await {
+    // check the users credentials, allow them through into the admin dashboard if they're validated, create a session for this user
+    let response = match validate_credentials(credentials, &app_state.db_pool).await {
         Ok(user_id) => {
             tracing::Span::current().record("user_id", &tracing::field::display(&user_id));
             session.renew();
             session.insert_user_id(user_id);
-            Ok(Redirect::to("/admin/dashboard"))
+            Redirect::to("/admin/dashboard").into_response()
         }
         Err(e) => {
             let e = match e {
@@ -51,9 +55,11 @@ pub async fn login(
 
             let flash = flash.error(e.to_string());
 
-            let response = Redirect::to("/login");
+            let response = Redirect::to("/login").into_response();
 
-            Err(ErrorResponse::from((flash, response).into_response()))
+            (flash, response).into_response()
         }
-    }
+    };
+
+    Ok(response)
 }

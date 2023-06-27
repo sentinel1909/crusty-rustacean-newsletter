@@ -51,7 +51,7 @@ pub async fn admin_dashboard(
     // render the admin dashboard page
     let template = AdminDashboard { username };
     match template.render() {
-        Ok(html) => Ok(Html(html).into_response()),
+        Ok(body) => Ok(Html((StatusCode::OK, body)).into_response()),
         Err(_) => Ok((StatusCode::NOT_FOUND, "page not found").into_response()),
     }
 }
