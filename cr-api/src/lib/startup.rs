@@ -147,31 +147,28 @@ pub fn run(
     // routes that don't need session support
     let router_no_session = Router::new().route("/health_check", get(health_check));
 
-    // admin routes
+    // admin section routes
     let router_for_admin_section = Router::new()
         .route("/admin/dashboard", get(admin_dashboard))
         .route("/admin/password", get(change_password_form))
         .route("/admin/password", post(change_password))
         .route("/admin/logout", post(log_out))
-        .layer(middleware::from_fn(reject_anonymous_users))
-        .layer(SessionLayer::new(session_store));
+        .layer(middleware::from_fn(reject_anonymous_users));
 
-    // non-admin routes
+    // All routes that need a session
     let router_for_non_admin_routes = Router::new()
         .route("/", get(home))
         .route("/login", get(login_form))
         .route("/login", post(login))
         .route("/newsletters", post(publish_newsletter))
         .route("/subscriptions", post(subscribe))
-        .route("/subscriptions/confirm", get(confirm));
+        .route("/subscriptions/confirm", get(confirm))
+        .merge(router_for_admin_section)
+        .layer(SessionLayer::new(session_store));
 
     // master router
     let app = Router::new()
-        .merge(
-            router_no_session
-                .merge(router_for_admin_section)
-                .merge(router_for_non_admin_routes),
-        )
+        .merge(router_no_session.merge(router_for_non_admin_routes))
         .layer(
             ServiceBuilder::new()
                 .set_x_request_id(MakeRequestUuid)

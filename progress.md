@@ -284,5 +284,5 @@
 # 2023-06-27
 ## Steps completed
 - finished up to the end of Chapter 10.9
-- 7 tests failing
+- all tests green
 

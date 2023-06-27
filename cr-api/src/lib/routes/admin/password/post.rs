@@ -75,7 +75,7 @@ pub async fn change_password(
     )
     .await
     .map_err(e500)?;
-    let flash = flash.error("Your password has been changed.");
+    let flash = flash.info("Your password has been changed.");
     let response = Redirect::to("/admin/password");
     Ok((flash, response).into_response())
 }

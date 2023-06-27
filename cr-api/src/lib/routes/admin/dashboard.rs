@@ -1,16 +1,16 @@
 // src/lib/routes/admin/dashboard.rs
 
 // dependencies
+use crate::authentication::UserId;
 use crate::domain::AdminDashboard;
 use crate::errors::{e500, ResponseInternalServerError};
-use crate::session_state::TypedSession;
 use crate::state::AppState;
 use anyhow::Context;
 use askama::Template;
 use axum::{
     extract::State,
     http::StatusCode,
-    response::{IntoResponse, Redirect},
+    response::{Extension, IntoResponse},
 };
 use axum_extra::response::Html;
 use axum_macros::debug_handler;
@@ -35,18 +35,13 @@ pub async fn get_username(user_id: Uuid, pool: &PgPool) -> Result<String, anyhow
 
 #[debug_handler]
 pub async fn admin_dashboard(
-    session: TypedSession,
+    Extension(user_id): Extension<UserId>,
     State(app_state): State<AppState>,
 ) -> Result<impl IntoResponse, ResponseInternalServerError<anyhow::Error>> {
-    // check the logged in user has a matching session, redirect to the login page if they don't
-    let username = if let Some(user_id) = session.get_user_id() {
-        get_username(user_id, &app_state.db_pool)
-            .await
-            .map_err(e500)?
-    } else {
-        let response = Redirect::to("/login");
-        return Ok(response.into_response());
-    };
+    // get the logged in user's username
+    let username = get_username(*user_id, &app_state.db_pool)
+        .await
+        .map_err(e500)?;
 
     // render the admin dashboard page
     let template = AdminDashboard { username };

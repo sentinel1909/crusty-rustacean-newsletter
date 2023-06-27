@@ -10,8 +10,8 @@ use secrecy::{ExposeSecret, Secret};
 use sqlx::PgPool;
 
 pub struct Credentials {
-    pub username: String,
-    pub password: Secret<String>,
+    pub(crate) username: String,
+    pub(crate) password: Secret<String>,
 }
 
 #[tracing::instrument(name = "Validate credentials", skip(credentials, pool))]
