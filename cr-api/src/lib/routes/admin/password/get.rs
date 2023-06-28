@@ -1,11 +1,9 @@
 // src/routes/home/get.rs
 
 // dependencies
+use crate::domain::ChangePasswordTemplate;
+use crate::errors::ResponseInternalServerError;
 use crate::session_state::TypedSession;
-use crate::{domain::ChangePasswordTemplate, errors::ResponseInternalServerError};
-use askama::Template;
-use axum::{http::StatusCode, response::IntoResponse};
-use axum_extra::response::Html;
 use axum_flash::IncomingFlashes;
 use axum_macros::debug_handler;
 use std::fmt::Write;
@@ -16,7 +14,7 @@ use std::fmt::Write;
 pub async fn change_password_form(
     flashes: IncomingFlashes,
     session: TypedSession,
-) -> Result<impl IntoResponse, ResponseInternalServerError<anyhow::Error>> {
+) -> Result<(IncomingFlashes, ChangePasswordTemplate), ResponseInternalServerError<anyhow::Error>> {
     // process any incoming flash messages and convert them to a string for rendering
     let mut flash_msg = String::new();
     for (level, text) in flashes.iter() {
@@ -24,9 +22,7 @@ pub async fn change_password_form(
     }
 
     // render the change password form, given that there is a valid user session, display any error message
-    let template = ChangePasswordTemplate { flash_msg };
-    match template.render() {
-        Ok(body) => Ok(Html((StatusCode::OK, body)).into_response()),
-        Err(_) => Ok((StatusCode::NOT_FOUND, "page not found").into_response()),
-    }
+    let change_password_template = ChangePasswordTemplate { flash_msg };
+
+    Ok((flashes, change_password_template))
 }
