@@ -9,7 +9,7 @@ use crate::configuration::Settings;
 use crate::email_client::EmailClient;
 use crate::routes::{
     admin_dashboard, change_password, change_password_form, confirm, health_check, home, log_out,
-    login, login_form, publish_newsletter, subscribe,
+    login, login_form, publish_newsletter, publish_newsletter_form, subscribe,
 };
 use crate::state::AppState;
 use crate::state::ApplicationBaseUrl;
@@ -150,6 +150,8 @@ pub fn run(
     // admin section routes
     let router_for_admin_section = Router::new()
         .route("/admin/dashboard", get(admin_dashboard))
+        .route("/admin/newsletter", get(publish_newsletter_form))
+        .route("/admin/newsletter", post(publish_newsletter))
         .route("/admin/password", get(change_password_form))
         .route("/admin/password", post(change_password))
         .route("/admin/logout", post(log_out))
@@ -160,7 +162,6 @@ pub fn run(
         .route("/", get(home))
         .route("/login", get(login_form))
         .route("/login", post(login))
-        .route("/newsletters", post(publish_newsletter))
         .route("/subscriptions", post(subscribe))
         .route("/subscriptions/confirm", get(confirm))
         .merge(router_for_admin_section)
