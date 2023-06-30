@@ -1,14 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crusty Rustacean Newsletter - Publish Form</title>
-</head>
-<body>
-  <body>
-    {msg_html}
-    <form action="/admin/newsletters" method="post">
+{% extends "base.html" %}
+
+{% block header %}
+<h2>Publish a newsletter edition</h2>
+{% endblock %}
+  
+{% block content %}
+  <form action="/admin/newsletters" method="post">
         <label>Title:<br>
             <input
                 type="text"
@@ -39,6 +36,4 @@
         <button type="submit">Publish</button>
     </form>
     <p><a href="/admin/dashboard">&lt;- Back</a></p>
-</body>
-</body>
-</html>
+{% endblock %}

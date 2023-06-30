@@ -10,7 +10,9 @@ use http::StatusCode;
 // struct to represent the home page template
 #[derive(Template)]
 #[template(path = "home.html")]
-pub struct HomeTemplate;
+pub struct HomeTemplate {
+    pub flash_msg: String,
+}
 
 // struct to represent the login page template
 #[derive(Template)]
@@ -23,6 +25,7 @@ pub struct LoginTemplate {
 #[derive(Template)]
 #[template(path = "admin_dashboard.html")]
 pub struct AdminDashboard {
+    pub flash_msg: String,
     pub username: String,
 }
 

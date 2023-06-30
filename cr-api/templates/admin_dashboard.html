@@ -1,19 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crusty Rustacean API - Admin Dashboard</title>
-</head>
-<body>
-  <p>Welcome {{username}}!</p>
-  <p>Available actions:</p>
-  <ol>
-    <li><a href="/admin/newsletter">Send a newsletter issue</a></li> 
-    <li><a href="/admin/password">Change password</a></li>
-  </ol>
-  <form name="logoutForm" action="/admin/logout" method="post">
-    <input type="submit" value="Logout">
-  </form>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block header %}
+<h2>Welcome {{ username }}</h2>
+{% endblock %}
+
+{% block content %}
+  <section>
+    <h3>Available actions:</h3>
+    <ol>
+      <li><a href="/admin/newsletter">Send a newsletter issue</a></li>
+      <li><a href="/admin/password">Change password</a></li>
+    </ol>
+    <br />
+    <form name="logoutForm" action="/admin/logout" method="post">
+      <input type="submit" value="Logout">
+    </form>
+  </section>
+{% endblock %}

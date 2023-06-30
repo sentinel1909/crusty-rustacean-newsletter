@@ -1,13 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="/assets/cr-api.css" rel=stylesheet type="text/css">
-  <title>Crusty Rustacean Newsletter - Home</title>
-</head>
-<body>
-  <h1>Welcome to the Crusty Rustacean Newsletter!</h1>
-  <button><a href="/login">Login</a></button>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block header %}
+<h2>API Home</h2>
+{% endblock %}
+
+{% block content %}
+  <section>
+    <h3>Login to access API admin tasks</h3>
+    <button><a href="/login">Login</a></button>
+  </section>
+{% endblock %}

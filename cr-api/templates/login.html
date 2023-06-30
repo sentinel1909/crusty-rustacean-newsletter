@@ -1,34 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crusty Rustacean API - Login</title>
-</head>
-<body> 
-  {{ flash_msg }}
-  <header>
-    <h2>Crusty Rustacean API - User Login</h2>
-    <p>Enter your username and password to login:</p>
-  </header>
+{% extends "base.html" %}
+
+{% block header %}
+<h2>User Login</h2>
+{% endblock %}
+
+{% block content %}
+<section>
+  <h3>Enter your username and password to login:</h3>
   <form action="/login" method="post">
-    <label>Username
-      <input
-        type="text"
-        placeholder="Enter Username"
-        name="username"
-      >
+    <label>Username:
+      <input type="test" placeholder="Enter Username" name="username">
     </label>
 
-    <label>Password
-      <input
-        type="password"
-        placeholder="Enter Password"
-        name="password"
-      >
+    <label>Password:
+      <input type="password" placeholder="Enter Password" name="password">
     </label>
 
     <button type="submit">Login</button>
   </form>
-</body>
-</html>
+</section>
+{% endblock %}
