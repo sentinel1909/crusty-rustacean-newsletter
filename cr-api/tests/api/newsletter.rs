@@ -58,17 +58,15 @@ async fn newsletters_are_not_delivered_to_unconfirmed_subscribers() {
     // Act - Part 1 - Submit newsletter form
     let newsletter_request_body = serde_json::json!({
       "title": "Newsletter title",
-      "content": {
-        "text_content": "Newsletter body as plain text",
-        "html_content": "<p>Newsletter body as HTML</p>",
-      }
+      "text_content": "Newsletter body as plain text",
+      "html_content": "<p>Newsletter body as HTML</p>",
     });
     let response = app.post_publish_newsletter(&newsletter_request_body).await;
     assert_is_redirect_to(&response, "/admin/newsletter");
 
     // Act - Part 2 - Follow the redirect
     let html_page = app.get_publish_newsletter_html().await;
-    assert!(html_page.contains("The news letter issue has been published."));
+    assert!(html_page.contains("The newsletter issue has been published."));
     // Mock verifies on Drop that we haven't sent the newsletter email
 }
 
@@ -89,17 +87,15 @@ async fn newsletters_are_delivered_to_confirmed_subscribers() {
     // Act - Part 1 - Submit newsletter form
     let newsletter_request_body = serde_json::json!({
       "title": "Newsletter title",
-      "content": {
-        "text_content": "Newsletter body as plain text",
-        "html_content": "<p>Newsletter body as HTML</p>",
-      }
+      "text_content": "Newsletter body as plain text",
+      "html_content": "<p>Newsletter body as HTML</p>",
     });
     let response = app.post_publish_newsletter(&newsletter_request_body).await;
     assert_is_redirect_to(&response, "/admin/newsletter");
 
     // Act - Part 2 - Follow the redirect
     let html_page = app.get_publish_newsletter_html().await;
-    assert!(html_page.contains("The news letter issue has been published."));
+    assert!(html_page.contains("The newsletter issue has been published."));
     // Mock verifies on Drop that we haven't sent the newsletter email
 }
 
