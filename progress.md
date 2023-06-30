@@ -286,3 +286,8 @@
 - finished up to the end of Chapter 10.9
 - all tests green
 
+# 2023-06-29
+## Steps completed
+- finished Chapter 10
+- two of the newsletter related tests are failing
+

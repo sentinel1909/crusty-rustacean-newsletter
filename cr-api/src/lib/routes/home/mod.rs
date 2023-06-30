@@ -14,7 +14,7 @@ pub async fn home(flashes: IncomingFlashes) -> (IncomingFlashes, HomeTemplate) {
     }
 
     // render the login form from its associated Askama template
-    let login_template = HomeTemplate { flash_msg };
+    let home_template = HomeTemplate { flash_msg };
 
-    (flashes, login_template)
+    (flashes, home_template)
 }

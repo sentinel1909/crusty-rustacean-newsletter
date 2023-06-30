@@ -14,7 +14,8 @@ use std::fmt::Write;
 pub async fn publish_newsletter_form(
     flashes: IncomingFlashes,
     session: TypedSession,
-) -> Result<(IncomingFlashes, PublishNewsletterTemplate), ResponseInternalServerError<anyhow::Error>> {
+) -> Result<(IncomingFlashes, PublishNewsletterTemplate), ResponseInternalServerError<anyhow::Error>>
+{
     // process any incoming flash messages and convert them to a string for rendering
     let mut flash_msg = String::new();
     for (level, text) in flashes.iter() {

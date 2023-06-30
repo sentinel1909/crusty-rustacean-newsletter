@@ -1,71 +1,34 @@
 // src/routes/admin/newsletter/post.rs
 
 // dependencies
-use crate::authentication::{validate_credentials, Credentials};
+use crate::authentication::UserId;
 use crate::domain::SubscriberEmail;
-use crate::errors::AuthError;
-use crate::errors::PublishError;
+use crate::errors::{e500, ResponseInternalServerError};
 use crate::state::AppState;
 use anyhow::Context;
 use axum::{
-    extract::State,
-    http::{header::HeaderMap, StatusCode},
-    response::{IntoResponse, Json},
+    extract::{Form, State},
+    response::{IntoResponse, Redirect},
+    Extension,
 };
-use base64::Engine;
-use secrecy::Secret;
+use axum_flash::Flash;
 use serde::Deserialize;
 use sqlx::PgPool;
 
+// a struct to represent the form data received from the newsletter publish form
 #[derive(Deserialize)]
-pub struct BodyData {
+pub struct NewsletterData {
     title: String,
-    content: Content,
+    text_content: String,
+    html_content: String,
 }
 
-#[derive(Deserialize)]
-pub struct Content {
-    html: String,
-    text: String,
-}
-
+// a struct to represent a confirmed subscriber
 struct ConfirmedSubscriber {
     email: SubscriberEmail,
 }
 
-fn basic_authentication(headers: &HeaderMap) -> Result<Credentials, anyhow::Error> {
-    // The header value, if present, must be a valid UTF8 string
-    let header_value = headers
-        .get("Authorization")
-        .context("The 'Authorization' header was missing")?
-        .to_str()
-        .context("The 'Authentication' header was not a valid UTF8 string.")?;
-    let base64encoded_credentials = header_value
-        .strip_prefix("Basic ")
-        .context("The authorization scheme was not 'Basic'.")?;
-    let decoded_bytes = base64::engine::general_purpose::STANDARD
-        .decode(base64encoded_credentials)
-        .context("Failed to base64-decode 'Basic' credential.")?;
-    let decoded_credentials = String::from_utf8(decoded_bytes)
-        .context("The decoded credentail string is not valid UTF8.")?;
-
-    // Spit into two segments, using ':' as delimiter
-    let mut credentials = decoded_credentials.splitn(2, ':');
-    let username = credentials
-        .next()
-        .ok_or_else(|| anyhow::anyhow!("A username must be provided in 'Basic' auth."))?
-        .to_string();
-    let password = credentials
-        .next()
-        .ok_or_else(|| anyhow::anyhow!("A password must be provided in 'Basic' auth."))?
-        .to_string();
-
-    Ok(Credentials {
-        username,
-        password: Secret::new(password),
-    })
-}
-
+// function which gets all confirmed subscribers from the database
 #[tracing::instrument(name = "Get confirmed subscribers", skip(pool))]
 async fn get_confirmed_subscribers(
     pool: &PgPool,
@@ -94,24 +57,18 @@ async fn get_confirmed_subscribers(
 // publish newsletter handler
 #[tracing::instrument(
 name = "Publish a newsletter issue",
-skip(body, app_state),
-fields(username=tracing::field::Empty, user_id=tracing::field::Empty)
+skip(newsletter_data, app_state, user_id),
+fields(user_id=%*user_id)
 )]
 pub async fn publish_newsletter(
+    Extension(user_id): Extension<UserId>,
+    flash: Flash,
     State(app_state): State<AppState>,
-    headers: HeaderMap,
-    body: Json<BodyData>,
-) -> Result<impl IntoResponse, PublishError> {
-    let credentials = basic_authentication(&headers).map_err(PublishError::AuthError)?;
-    tracing::Span::current().record("username", &tracing::field::display(&credentials.username));
-    let user_id = validate_credentials(credentials, &app_state.db_pool)
+    newsletter_data: Form<NewsletterData>,
+) -> Result<impl IntoResponse, ResponseInternalServerError<anyhow::Error>> {
+    let subscribers = get_confirmed_subscribers(&app_state.db_pool)
         .await
-        .map_err(|e| match e {
-            AuthError::InvalidCredentials(_) => PublishError::AuthError(e.into()),
-            AuthError::UnexpectedError(_) => PublishError::UnexpectedError(e.into()),
-        })?;
-    tracing::Span::current().record("user_id", &tracing::field::display(&user_id));
-    let subscribers = get_confirmed_subscribers(&app_state.db_pool).await?;
+        .map_err(e500)?;
     for subscriber in subscribers {
         match subscriber {
             Ok(subscriber) => {
@@ -119,14 +76,15 @@ pub async fn publish_newsletter(
                     .em_client
                     .send_email(
                         &subscriber.email,
-                        &body.title,
-                        &body.content.html,
-                        &body.content.text,
+                        &newsletter_data.title,
+                        &newsletter_data.html_content,
+                        &newsletter_data.text_content,
                     )
                     .await
                     .with_context(|| {
                         format!("Failed to send newsletter issue to {}", subscriber.email)
-                    })?;
+                    })
+                    .map_err(e500)?;
             }
             Err(error) => {
                 tracing::warn!(
@@ -141,5 +99,8 @@ pub async fn publish_newsletter(
             }
         }
     }
-    Ok(StatusCode::OK)
+
+    let flash = flash.info("The newsletter issue has been published!");
+    let response = Redirect::to("/admin/newsletter");
+    Ok((flash, response).into_response())
 }

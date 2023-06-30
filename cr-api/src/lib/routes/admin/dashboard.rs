@@ -42,14 +42,17 @@ pub async fn admin_dashboard(
     for (level, text) in flashes.iter() {
         writeln!(flash_msg, "{:?}: {}\n", level, text).unwrap();
     }
-    
+
     // get the logged in user's username
     let username = get_username(*user_id, &app_state.db_pool)
         .await
         .map_err(e500)?;
 
     // render the admin dashboard page
-    let admin_dashboard_template = AdminDashboard { flash_msg, username };
+    let admin_dashboard_template = AdminDashboard {
+        flash_msg,
+        username,
+    };
 
     Ok(admin_dashboard_template)
 }
