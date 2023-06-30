@@ -2,5 +2,8 @@
   "rust-analyzer.linkedProjects": [
     "./cr-api/Cargo.toml",
     "./cr-api/Cargo.toml"
+  ],
+  "cSpell.words": [
+    "sqlx"
   ]
 }
