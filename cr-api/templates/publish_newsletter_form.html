@@ -11,6 +11,7 @@
                 type="text"
                 placeholder="Enter the issue title"
                 name="title"
+                required
             >
         </label>
         <br>
@@ -20,7 +21,8 @@
                 name="text_content"
                 rows="20"
                 cols="50"
-            ></textarea>
+            >
+            </textarea>
         </label>
         <br>
         <label>HTML content:<br>
@@ -29,7 +31,8 @@
                 name="html_content"
                 rows="20"
                 cols="50"
-            ></textarea>
+            >
+            </textarea>
         </label>
         <br>
         <input hidden type="text" name="idempotency_key" value="{idempotency_key}">
