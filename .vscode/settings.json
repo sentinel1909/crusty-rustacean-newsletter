@@ -4,8 +4,15 @@
     "./cr-api/Cargo.toml"
   ],
   "cSpell.words": [
+    "Clippy",
+    "dtolnay",
     "hmac",
     "idempotency",
-    "sqlx"
+    "libpq",
+    "Protoc",
+    "Rustfmt",
+    "rustls",
+    "sqlx",
+    "Swatinem"
   ]
 }
