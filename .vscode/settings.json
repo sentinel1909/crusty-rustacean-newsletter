@@ -4,6 +4,7 @@
     "./cr-api/Cargo.toml"
   ],
   "cSpell.words": [
+    "hmac",
     "idempotency",
     "sqlx"
   ]
