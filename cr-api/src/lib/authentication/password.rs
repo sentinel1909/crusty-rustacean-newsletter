@@ -60,7 +60,7 @@ async fn get_stored_credentials(
     )
     .fetch_optional(pool)
     .await
-    .context("Failed to peform a query to retrieve stored credentials.")?
+    .context("Failed to perform a query to retrieve stored credentials.")?
     .map(|row| (row.user_id, Secret::new(row.password_hash)));
     Ok(row)
 }

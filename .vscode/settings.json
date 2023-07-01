@@ -10,9 +10,13 @@
     "idempotency",
     "libpq",
     "Protoc",
+    "rustacean",
     "Rustfmt",
     "rustls",
     "sqlx",
     "Swatinem"
+  ],
+  "cSpell.ignoreWords": [
+    "Orkoo"
   ]
 }
