@@ -6,15 +6,20 @@
   "cSpell.words": [
     "Clippy",
     "dtolnay",
+    "Hasher",
     "hmac",
     "idempotency",
     "libpq",
+    "linkify",
     "Protoc",
+    "Randomise",
+    "reqwest",
     "rustacean",
     "Rustfmt",
     "rustls",
     "sqlx",
-    "Swatinem"
+    "Swatinem",
+    "wiremock"
   ],
   "cSpell.ignoreWords": [
     "Orkoo"

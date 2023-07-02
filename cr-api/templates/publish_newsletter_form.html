@@ -7,35 +7,17 @@
 {% block content %}
   <form action="/admin/newsletter" method="post">
         <label>Title:<br>
-            <input
-                type="text"
-                placeholder="Enter the issue title"
-                name="title"
-                required
-            >
+            <input type="text" placeholder="Enter the issue title" name="title" required>
         </label>
         <br>
         <label>Plain text content:<br>
-            <textarea
-                placeholder="Enter the content in plain text"
-                name="text_content"
-                rows="20"
-                cols="50"
-            >
-            </textarea>
+            <textarea placeholder="Enter the content in plain text" name="text_content" rows="20" cols="50" required></textarea>
         </label>
         <br>
         <label>HTML content:<br>
-            <textarea
-                placeholder="Enter the content in HTML format"
-                name="html_content"
-                rows="20"
-                cols="50"
-            >
-            </textarea>
+            <textarea placeholder="Enter the content in HTML format" name="html_content" rows="20"cols="50" required></textarea>
         </label>
         <br>
-        <input hidden type="text" name="idempotency_key" value="{idempotency_key}">
         <button type="submit">Publish</button>
     </form>
     <p><a href="/admin/dashboard">&lt;- Back</a></p>

@@ -127,3 +127,55 @@ async fn you_must_be_logged_in_to_publish_a_newsletter() {
     // Assert
     assert_is_redirect_to(&response, "/login");
 }
+
+#[tokio::test]
+async fn invalid_newsletter_form_data_is_rejected() {
+    // Arrange
+    let app = spawn_app().await;
+    let test_cases = vec![
+        (
+            serde_json::json!({
+                "title": "test",
+                "text_content": "Newsletter body as plain text",
+                "html_content": "<p>Newsletter body as HTML</p>",
+            }),
+            "title has less than 5 characters",
+        ),
+        (
+            serde_json::json!({
+                "title": "Newsletter title",
+                "text_content": "test",
+                "html_content": "<p>Newsletter body as HTML</p>",
+            }),
+            "text_content has less than 5 characters",
+        ),
+        (
+            serde_json::json!({
+                "title": "Newsletter title",
+                "text_content": "Newsletter body as plain text",
+                "html_content": "test"
+            }),
+            "html_content has less than 5 characters",
+        ),
+    ];
+
+    app.test_user.login(&app).await;
+
+    // Act
+    for (invalid_body, error_message) in test_cases {
+        let _ = app
+            .post_publish_newsletter(&invalid_body)
+            .await
+            .text()
+            .await;
+
+        let html = app.get_publish_newsletter_html().await;
+
+        // Assert
+        assert!(
+            html.contains("Part of the form body has less than 5 characters"),
+            "The API did not fail when the payload was {}.",
+            error_message
+        );
+    }
+}

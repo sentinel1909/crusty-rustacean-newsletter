@@ -14,12 +14,16 @@ use axum::{
 use axum_flash::Flash;
 use serde::Deserialize;
 use sqlx::PgPool;
+use validator::Validate;
 
 // a struct to represent the form data received from the newsletter publish form
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct NewsletterData {
+    #[validate(length(min = 5))]
     title: String,
+    #[validate(length(min = 5))]
     text_content: String,
+    #[validate(length(min = 5))]
     html_content: String,
 }
 
@@ -66,6 +70,20 @@ pub async fn publish_newsletter(
     State(app_state): State<AppState>,
     newsletter_data: Form<NewsletterData>,
 ) -> Result<impl IntoResponse, ResponseInternalServerError<anyhow::Error>> {
+    // validate the form data
+    let validated_data = match newsletter_data.validate() {
+        Ok(_) => {
+            tracing::trace!("Successfully extracted form body.");
+            &newsletter_data
+        }
+        Err(e) => {
+            tracing::trace!("Unable to extract form body: {:?}", e);
+            let flash = flash.error("Part of the form body has less than 5 characters");
+            return Ok((flash, Redirect::to("/admin/newsletter")).into_response());
+        }
+    };
+
+    // send out a newsletter issue to all the confirmed subscribers, using the validated form data
     let subscribers = get_confirmed_subscribers(&app_state.db_pool)
         .await
         .map_err(e500)?;
@@ -76,9 +94,9 @@ pub async fn publish_newsletter(
                     .em_client
                     .send_email(
                         &subscriber.email,
-                        &newsletter_data.title,
-                        &newsletter_data.html_content,
-                        &newsletter_data.text_content,
+                        &validated_data.title,
+                        &validated_data.html_content,
+                        &validated_data.text_content,
                     )
                     .await
                     .with_context(|| {
@@ -96,6 +114,7 @@ pub async fn publish_newsletter(
         }
     }
 
+    // build and send the success response message
     let flash = flash.info("The newsletter issue has been published.");
     let response = Redirect::to("/admin/newsletter");
     Ok((flash, response).into_response())
