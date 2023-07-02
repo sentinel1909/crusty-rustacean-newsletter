@@ -1,16 +1,15 @@
 // src/routes/subscriptions_confirm.rs
 
 // dependencies
-use crate::errors::ConfirmationError;
+
 use crate::state::AppState;
+use crate::{domain::SubscriptionConfirmationTemplate, errors::ConfirmationError};
 use anyhow::Context;
-use axum::{
-    extract::{Query, State},
-    http::StatusCode,
-    response::IntoResponse,
-};
+use axum::extract::{Query, State};
+use axum_flash::IncomingFlashes;
 use serde::Deserialize;
 use sqlx::PgPool;
+use std::fmt::Write;
 use uuid::Uuid;
 
 // struct to represent the query parameters, which includes a subscription token
@@ -51,8 +50,9 @@ WHERE subscription_token = $1",
 #[tracing::instrument(name = "Confirm a pending subscriber")]
 pub async fn confirm(
     State(app_state): State<AppState>,
+    flashes: IncomingFlashes,
     parameters: Query<Parameters>,
-) -> Result<impl IntoResponse, ConfirmationError> {
+) -> Result<(IncomingFlashes, SubscriptionConfirmationTemplate), ConfirmationError> {
     let subscriber_id =
         get_subscriber_id_from_token(&app_state.db_pool, &parameters.subscription_token)
             .await
@@ -61,5 +61,15 @@ pub async fn confirm(
     confirm_subscriber(&app_state.db_pool, subscriber_id)
         .await
         .context("Failed to update the subscriber status to 'confirmed'.")?;
-    Ok(StatusCode::OK)
+
+    // process any incoming flash messages
+    let mut flash_msg = String::new();
+    for (level, text) in flashes.iter() {
+        writeln!(flash_msg, "{:?}: {}\n", level, text).unwrap();
+    }
+
+    // render the login form from its associated Askama template
+    let subscription_confirmation_template = SubscriptionConfirmationTemplate { flash_msg };
+
+    Ok((flashes, subscription_confirmation_template))
 }

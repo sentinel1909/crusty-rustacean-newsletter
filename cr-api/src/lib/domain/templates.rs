@@ -43,6 +43,13 @@ pub struct PublishNewsletterTemplate {
     pub flash_msg: String,
 }
 
+// struct to represent the subscription conformation template
+#[derive(Template)]
+#[template(path = "subscription_confirmed.html")]
+pub struct SubscriptionConfirmationTemplate {
+    pub flash_msg: String,
+}
+
 // implement IntoResponse for the Askama templates
 pub fn into_response<T: Template>(t: &T) -> Response {
     match t.render() {

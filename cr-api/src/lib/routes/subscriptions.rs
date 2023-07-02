@@ -107,12 +107,12 @@ pub async fn send_confirmation_email(
     );
 
     let plain_body = format!(
-        "Welcome to our newsletter!\nVisit {} to confirm your subscription.",
+        "Welcome to the Crusty Rustacean newsletter!\nVisit {} to confirm your subscription.",
         confirmation_link
     );
 
     let html_body = &format!(
-        "Welcome to our newsletter!<br />
+        "Welcome to the Crusty Rustacean newsletter!<br />
         Click <a href=\"{}\">here</a> to confirm your subscription.",
         confirmation_link
     );
