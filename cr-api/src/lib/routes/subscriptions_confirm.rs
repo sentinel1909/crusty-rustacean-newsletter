@@ -68,7 +68,8 @@ pub async fn confirm(
         writeln!(flash_msg, "{:?}: {}\n", level, text).unwrap();
     }
 
-    // render the login form from its associated Askama template
+    // render the subscription confirmation page form from its associated Askama template
+    // TODO: make sure errors are rendered properly, as it stands now, this page will render regardless of any errors
     let subscription_confirmation_template = SubscriptionConfirmationTemplate { flash_msg };
 
     Ok((flashes, subscription_confirmation_template))

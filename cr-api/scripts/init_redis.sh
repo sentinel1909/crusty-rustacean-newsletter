@@ -1,5 +1,5 @@
-# scripts/init_redis.sh
 #! /usr/bin/env bash
+# scripts/init_redis.sh
 
 set -x
 set -eo pipefail
@@ -13,6 +13,6 @@ if [[ -n $RUNNING_CONTAINER ]]; then
 fi
 
 # Launch Redis using Docker
-docker run -p "6379:6379" -d --name "redis_$(ate '+%s')" redis:7
+docker run -p "6379:6379" -d --name "redis_$(date '+%s')" redis:7
 
 >&2 echo "Redis is ready to go!"

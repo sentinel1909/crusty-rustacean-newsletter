@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# scripts/init_db.sh
+
 set -x
 set -eo pipefail
 

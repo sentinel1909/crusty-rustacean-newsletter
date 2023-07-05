@@ -291,3 +291,9 @@
 - finished Chapter 10
 - all tests green
 
+# 2023-07-04
+## Steps completed
+- have fallen behind a bit with these updates, catching up
+- added Askama templates for all external web content, including a new web page which serves up on subscription confirmation
+- deployed to [Railway](https://railway.app)
+- fixed a long standing bug in the init_redis.sh script; turns out I didn't have the shebang properly set at the top of the file, `just init` now works to spin up the supporting Postgres and Redis DBs on Docker, for local development

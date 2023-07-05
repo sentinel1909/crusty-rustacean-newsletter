@@ -11,6 +11,7 @@
     "Hasher",
     "hmac",
     "idempotency",
+    "justfile",
     "libpq",
     "linkify",
     "Protoc",

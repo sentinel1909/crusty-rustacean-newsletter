@@ -1,7 +1,9 @@
-//! local build/src/main.rs
+// local build/src/main.rs
 
+// dependencies
 use cmd_lib::*;
 
+// main function
 fn main() -> CmdResult {
     let db_init_msg = "Initializing database for local development...";
     run_cmd!(echo $db_init_msg)?;
