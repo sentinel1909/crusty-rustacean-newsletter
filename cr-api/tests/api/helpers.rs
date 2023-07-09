@@ -4,6 +4,7 @@ use argon2::password_hash::SaltString;
 use argon2::{Algorithm, Argon2, Params, PasswordHasher, Version};
 use cr_api::configuration::{get_configuration, DatabaseSettings};
 use cr_api::email_client::EmailClient;
+use cr_api::idempotency_cleanup_worker::remove_old_idempotency_keys;
 use cr_api::issue_delivery_worker::{try_execute_task, ExecutionOutcome};
 use cr_api::startup::{get_connection_pool, Application};
 use cr_api::telemetry::{get_subscriber, init_subscriber};
@@ -97,6 +98,10 @@ impl TestApp {
                 break;
             }
         }
+    }
+
+    pub async fn clean_up_idempotency(&self) {
+        remove_old_idempotency_keys(&self.db_pool).await.unwrap();
     }
 
     pub async fn post_subscriptions(&self, body: String) -> reqwest::Response {

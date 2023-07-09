@@ -41,7 +41,7 @@ async fn worker_loop(pool: PgPool, email_client: EmailClient) -> Result<(), anyh
 }
 
 // function which runs the worker loop until it is stopped
-pub async fn run_worker_until_stopped(configuration: Settings) -> Result<(), anyhow::Error> {
+pub async fn run_delivery_until_stopped(configuration: Settings) -> Result<(), anyhow::Error> {
     let connection_pool = get_connection_pool(&configuration.database);
     let email_client = configuration.email_client.client();
     worker_loop(connection_pool, email_client).await

@@ -277,3 +277,72 @@ async fn concurrent_form_submission_is_handled_gracefully() {
     app.dispatch_all_pending_emails().await
     // Mock verifies on Drop that we have sent the newsletter email **once**
 }
+
+#[tokio::test]
+async fn old_idempotency_entries_are_cleaned_up() {
+    // Arrange
+    let app = spawn_app().await;
+    create_confirmed_subscriber(&app).await;
+
+    // Get the new subscriber's user_id
+    let user = sqlx::query!("SELECT user_id FROM users")
+        .fetch_one(&app.db_pool)
+        .await
+        .expect("Failed to fetch saved subscription");
+    let user_id = user.user_id;
+
+    // Manually create a test idempotency record. No need for actual data
+    // because we're just testing the cleaner cleans old ones out.
+    sqlx::query!(
+        r#"
+        INSERT INTO idempotency (
+            idempotency_key,
+            user_id,
+            created_at 
+        )
+        VALUES ($1, $2, now() - interval '6 days')
+        "#,
+        uuid::Uuid::new_v4().to_string(),
+        &user_id,
+    )
+    .execute(&app.db_pool)
+    .await
+    .expect("Couldn't create an idempotency entry");
+
+    // Create a second one that won't be cleaned because it's too new
+    sqlx::query!(
+        r#"
+        INSERT INTO idempotency (
+            idempotency_key,
+            user_id,
+            created_at 
+        )
+        VALUES ($1, $2, now())
+        "#,
+        uuid::Uuid::new_v4().to_string(),
+        user_id,
+    )
+    .execute(&app.db_pool)
+    .await
+    .expect("Couldn't create an idempotency entry");
+
+    // Act
+    app.clean_up_idempotency().await;
+
+    // struct Count {
+    //     value: Option<i64>,
+    // }
+
+    // Assert
+    let count = sqlx::query!(
+        r#"
+        SELECT COUNT (*) as "value"
+        FROM idempotency
+        "#
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .expect("Couldn't get the idempotency count");
+
+    assert_eq!(1, count.value.unwrap());
+}

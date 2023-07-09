@@ -6,6 +6,7 @@ pub mod domain;
 pub mod email_client;
 pub mod errors;
 pub mod idempotency;
+pub mod idempotency_cleanup_worker;
 pub mod issue_delivery_worker;
 pub mod routes;
 pub mod session_state;

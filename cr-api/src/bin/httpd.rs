@@ -2,7 +2,8 @@
 
 // dependencies, internal and external
 use cr_api::configuration::get_configuration;
-use cr_api::issue_delivery_worker::run_worker_until_stopped;
+use cr_api::idempotency_cleanup_worker::run_cleanup_until_stopped;
+use cr_api::issue_delivery_worker::run_delivery_until_stopped;
 use cr_api::startup::Application;
 use cr_api::telemetry::{get_subscriber, init_subscriber};
 use std::fmt::{Debug, Display};
@@ -47,11 +48,15 @@ async fn main() -> anyhow::Result<()> {
     let application_task = tokio::spawn(application.run_until_stopped());
 
     // define the delivery processing service worker
-    let worker_task = tokio::spawn(run_worker_until_stopped(configuration));
+    let email_delivery_task = tokio::spawn(run_delivery_until_stopped(configuration.clone()));
+
+    // define the idempotency cleanup service worker
+    let idempotency_cleanup_task = tokio::spawn(run_cleanup_until_stopped(configuration));
 
     tokio::select! {
         o = application_task => report_exit("API", o),
-        o = worker_task => report_exit("Background worker", o),
+        o = email_delivery_task => report_exit("Email delivery worker", o),
+        o = idempotency_cleanup_task => report_exit("Idempotency cleanup worker", o),
     };
     Ok(())
 }
