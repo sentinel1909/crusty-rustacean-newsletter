@@ -2,12 +2,39 @@
 
 // dependencies, internal and external
 use cr_api::configuration::get_configuration;
+use cr_api::issue_delivery_worker::run_worker_until_stopped;
 use cr_api::startup::Application;
 use cr_api::telemetry::{get_subscriber, init_subscriber};
+use std::fmt::{Debug, Display};
+use tokio::task::JoinError;
+
+fn report_exit(task_name: &str, outcome: Result<Result<(), impl Debug + Display>, JoinError>) {
+    match outcome {
+        Ok(Ok(())) => {
+            tracing::info!("{} has exited", task_name)
+        }
+        Ok(Err(e)) => {
+            tracing::error!(
+            error.cause_chain = ?e,
+            error.message = %e,
+            "{} failed",
+            task_name
+            )
+        }
+        Err(e) => {
+            tracing::error!(
+            error.cause_chain = ?e,
+            error.message = %e,
+            "{}' task failed to complete",
+            task_name
+            )
+        }
+    }
+}
 
 // main function
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> anyhow::Result<()> {
     // initialize tracing
     let subscriber = get_subscriber("cr-api".into(), "info".into(), std::io::stdout);
     init_subscriber(subscriber);
@@ -16,7 +43,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let configuration = get_configuration().expect("Failed to read configuration.");
 
     // return an instance of the application
-    let application = Application::build(configuration).await?;
-    application.run_until_stopped().await?;
+    let application = Application::build(configuration.clone()).await?;
+    let application_task = tokio::spawn(application.run_until_stopped());
+
+    // define the delivery processing service worker
+    let worker_task = tokio::spawn(run_worker_until_stopped(configuration));
+
+    tokio::select! {
+        o = application_task => report_exit("API", o),
+        o = worker_task => report_exit("Background worker", o),
+    };
     Ok(())
 }

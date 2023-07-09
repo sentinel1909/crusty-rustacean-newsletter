@@ -22,6 +22,8 @@
     "rustls",
     "sqlx",
     "Swatinem",
+    "thiserror",
+    "timestampz",
     "wiremock"
   ],
   "cSpell.ignoreWords": [

@@ -297,3 +297,9 @@
 - added Askama templates for all external web content, including a new web page which serves up on subscription confirmation
 - deployed to [Railway](https://railway.app)
 - fixed a long standing bug in the init_redis.sh script; turns out I didn't have the shebang properly set at the top of the file, `just init` now works to spin up the supporting Postgres and Redis DBs on Docker, for local development
+
+# 2023-07-08
+## Steps completed
+- finished up to the end of Chapter 11.10
+- all tests green
+- must complete idempotency key expiry and associated tests

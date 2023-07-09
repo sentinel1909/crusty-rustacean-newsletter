@@ -6,6 +6,7 @@
 pub use askama::*;
 pub use axum::response::{IntoResponse, Response};
 use http::StatusCode;
+use uuid::Uuid;
 
 // struct to represent the home page template
 #[derive(Template)]
@@ -41,6 +42,7 @@ pub struct ChangePasswordTemplate {
 #[template(path = "publish_newsletter_form.html")]
 pub struct PublishNewsletterTemplate {
     pub flash_msg: String,
+    pub idempotency_key: Uuid,
 }
 
 // struct to represent the subscription conformation template

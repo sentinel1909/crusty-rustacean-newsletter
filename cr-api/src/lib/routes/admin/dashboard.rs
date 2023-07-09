@@ -3,7 +3,7 @@
 // dependencies
 use crate::authentication::UserId;
 use crate::domain::AdminDashboard;
-use crate::errors::{e500, ResponseInternalServerError};
+use crate::errors::{e500, ResponseError};
 use crate::state::AppState;
 use anyhow::Context;
 use axum::{extract::State, response::Extension};
@@ -13,7 +13,7 @@ use sqlx::PgPool;
 use std::fmt::Write;
 use uuid::Uuid;
 
-// function which retrives the username from the users database and return it
+// function which retrieves the username from the users database and return it
 #[tracing::instrument(name = "Get username", skip(pool))]
 pub async fn get_username(user_id: Uuid, pool: &PgPool) -> Result<String, anyhow::Error> {
     let row = sqlx::query!(
@@ -36,7 +36,7 @@ pub async fn admin_dashboard(
     Extension(user_id): Extension<UserId>,
     flashes: IncomingFlashes,
     State(app_state): State<AppState>,
-) -> Result<AdminDashboard, ResponseInternalServerError<anyhow::Error>> {
+) -> Result<AdminDashboard, ResponseError> {
     // process any incoming flash messages
     let mut flash_msg = String::new();
     for (level, text) in flashes.iter() {

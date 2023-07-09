@@ -2,7 +2,7 @@
 
 // dependencies
 use crate::domain::PublishNewsletterTemplate;
-use crate::errors::ResponseInternalServerError;
+use crate::errors::ResponseError;
 use crate::session_state::TypedSession;
 use axum_flash::IncomingFlashes;
 use axum_macros::debug_handler;
@@ -14,8 +14,10 @@ use std::fmt::Write;
 pub async fn publish_newsletter_form(
     flashes: IncomingFlashes,
     session: TypedSession,
-) -> Result<(IncomingFlashes, PublishNewsletterTemplate), ResponseInternalServerError<anyhow::Error>>
-{
+) -> Result<(IncomingFlashes, PublishNewsletterTemplate), ResponseError> {
+    // set a random idempotency key for embedding in the newsletter publishing form
+    let idempotency_key = uuid::Uuid::new_v4();
+
     // process any incoming flash messages and convert them to a string for rendering
     let mut flash_msg = String::new();
     for (level, text) in flashes.iter() {
@@ -23,7 +25,10 @@ pub async fn publish_newsletter_form(
     }
 
     // render the change password form, given that there is a valid user session, display any error message
-    let publish_newsletter_template = PublishNewsletterTemplate { flash_msg };
+    let publish_newsletter_template = PublishNewsletterTemplate {
+        flash_msg,
+        idempotency_key,
+    };
 
     Ok((flashes, publish_newsletter_template))
 }

@@ -169,23 +169,89 @@ impl std::fmt::Debug for LoginError {
     }
 }
 
+// a struct which represents a type to wrap a BAD REQUEST error
 #[derive(Debug, thiserror::Error)]
 #[error(transparent)]
-pub struct ResponseInternalServerError<T>(#[from] T);
+pub struct ResponseBadRequestError<T>(#[from] T);
 
-impl<T: std::fmt::Debug> IntoResponse for ResponseInternalServerError<T> {
+impl<T: std::fmt::Debug> IntoResponse for ResponseBadRequestError<T> {
     fn into_response(self) -> Response {
         tracing::error!("{:?}", self);
-        StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        StatusCode::BAD_REQUEST.into_response()
     }
 }
 
-// return an opaque 500 while preserving the error's root cause for logging
-pub fn e500<T>(e: T) -> ResponseInternalServerError<T>
+pub struct ResponseError {
+    status_code: StatusCode,
+    internal_error: Box<dyn std::error::Error>,
+}
+
+impl ResponseError {
+    pub fn new(status_code: StatusCode, internal_error: Box<dyn std::error::Error>) -> Self {
+        Self {
+            status_code,
+            internal_error,
+        }
+    }
+
+    pub fn set_status(mut self, status_code: StatusCode) -> Self {
+        self.status_code = status_code;
+        self
+    }
+}
+
+impl IntoResponse for ResponseError {
+    fn into_response(self) -> axum::response::Response {
+        tracing::error!("{:?}", self);
+        (self.status_code, self.internal_error.to_string()).into_response()
+    }
+}
+
+impl<E> From<E> for ResponseError
 where
-    T: std::fmt::Debug + std::fmt::Display + 'static,
+    E: Into<Box<dyn std::error::Error>>,
 {
-    ResponseInternalServerError::from(e)
+    fn from(value: E) -> Self {
+        let internal_error: Box<dyn std::error::Error> = value.into();
+        Self {
+            status_code: StatusCode::INTERNAL_SERVER_ERROR,
+            internal_error,
+        }
+    }
+}
+
+impl std::fmt::Debug for ResponseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        error_chain_fmt(&self.internal_error.as_ref(), f)
+    }
+}
+
+impl std::fmt::Display for ResponseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", &self.internal_error.to_string())
+    }
+}
+
+// return a 400 with the user-representation of the validation error as body.
+// the error root cause is preserved for logging purposes
+pub fn e400<T>(e: T) -> ResponseError
+where
+    T: std::fmt::Debug,
+    T: std::fmt::Display + 'static,
+    T: Into<Box<dyn std::error::Error>>,
+{
+    ResponseError::from(e).set_status(StatusCode::BAD_REQUEST)
+}
+
+// return a 500 with the user-representation of the validation error as body.
+// the error root cause is preserved for logging purposes
+pub fn e500<T>(e: T) -> ResponseError
+where
+    T: std::fmt::Debug,
+    T: std::fmt::Display + 'static,
+    T: Into<Box<dyn std::error::Error>>,
+{
+    ResponseError::from(e)
 }
 
 // helper function to nicely format the std::error::Error message chain

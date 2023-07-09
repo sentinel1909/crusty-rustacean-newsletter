@@ -2,7 +2,7 @@
 
 // dependencies
 use crate::domain::ChangePasswordTemplate;
-use crate::errors::ResponseInternalServerError;
+use crate::errors::ResponseError;
 use crate::session_state::TypedSession;
 use axum_flash::IncomingFlashes;
 use axum_macros::debug_handler;
@@ -14,7 +14,7 @@ use std::fmt::Write;
 pub async fn change_password_form(
     flashes: IncomingFlashes,
     session: TypedSession,
-) -> Result<(IncomingFlashes, ChangePasswordTemplate), ResponseInternalServerError<anyhow::Error>> {
+) -> Result<(IncomingFlashes, ChangePasswordTemplate), ResponseError> {
     // process any incoming flash messages and convert them to a string for rendering
     let mut flash_msg = String::new();
     for (level, text) in flashes.iter() {
