@@ -303,3 +303,9 @@
 - finished up to the end of Chapter 11.10
 - all tests green
 - must complete idempotency key expiry and associated tests
+
+# 2023-07-09
+## Steps completed
+- book content officially wrapped
+- added idempotency cleanup worker, including associated test
+- all tests green
