@@ -1,6 +1,7 @@
 // src/lib/routes/subscribe.rs
 
 // dependencies
+use crate::domain::PendingConfirmationTemplate;
 use crate::domain::{NewSubscriber, SubscriberEmail, SubscriberName};
 use crate::email_client::EmailClient;
 use crate::errors::{StoreTokenError, SubscribeError};
@@ -8,14 +9,15 @@ use crate::state::AppState;
 use anyhow::Context;
 use axum::{
     extract::{Form, State},
-    http::StatusCode,
     response::Result,
 };
+use axum_flash::IncomingFlashes;
 use chrono::Utc;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use serde::Deserialize;
 use sqlx::{Postgres, Transaction};
+use std::fmt::Write;
 use uuid::Uuid;
 
 // data structure to model the incoming form data from the subscribe handler
@@ -91,6 +93,7 @@ pub async fn insert_subscriber(
     Ok(subscriber_id)
 }
 
+// function which sends out a confirmation email
 #[tracing::instrument(
     name = "Sending a confirmation email to a new subscriber",
     skip(email_client, new_subscriber, base_url)
@@ -132,9 +135,10 @@ pub async fn send_confirmation_email(
     )
 )]
 pub async fn subscribe(
+    flashes: IncomingFlashes,
     State(app_state): State<AppState>,
     subscription_data: Form<SubscriptionData>,
-) -> Result<StatusCode, SubscribeError> {
+) -> Result<(IncomingFlashes, PendingConfirmationTemplate), SubscribeError> {
     let new_subscriber = subscription_data
         .try_into()
         .map_err(SubscribeError::ValidationError)?;
@@ -168,5 +172,15 @@ pub async fn subscribe(
     .await
     .context("Failed to send a confirmation email.")?;
 
-    Ok(StatusCode::OK)
+    // process any incoming flash messages and convert them to a string for rendering
+    let mut flash_msg = String::new();
+    for (level, text) in flashes.iter() {
+        writeln!(flash_msg, "{:?}: {}\n", level, text).unwrap();
+    }
+
+    // render the change password form, given that there is a valid user session, display any error message
+    // TODO: make sure errors are rendered properly, as it stands now, this page will render regardless of any errors
+    let pending_confirmation_template = PendingConfirmationTemplate { flash_msg };
+
+    Ok((flashes, pending_confirmation_template))
 }

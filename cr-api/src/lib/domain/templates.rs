@@ -45,10 +45,17 @@ pub struct PublishNewsletterTemplate {
     pub idempotency_key: Uuid,
 }
 
-// struct to represent the subscription conformation template
+// struct to represent the subscription confirmation template
 #[derive(Template)]
 #[template(path = "subscription_confirmed.html")]
 pub struct SubscriptionConfirmationTemplate {
+    pub flash_msg: String,
+}
+
+// struct to represent the pending subscription confirmation template
+#[derive(Template)]
+#[template(path = "pending_subscription.html")]
+pub struct PendingConfirmationTemplate {
     pub flash_msg: String,
 }
 
