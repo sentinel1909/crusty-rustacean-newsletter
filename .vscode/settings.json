@@ -4,6 +4,7 @@
     "./cr-api/Cargo.toml"
   ],
   "cSpell.words": [
+    "Actix",
     "askama",
     "chrono",
     "Clippy",
@@ -14,6 +15,7 @@
     "justfile",
     "libpq",
     "linkify",
+    "Prechecks",
     "Protoc",
     "Randomise",
     "reqwest",
