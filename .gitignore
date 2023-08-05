@@ -1,5 +1,10 @@
 # gitignore for repo crusty-rustacean-api
 
+# misc settings
+.idea
+.vscode
+
+# output directories
 /target
 /cr-api/target
 
