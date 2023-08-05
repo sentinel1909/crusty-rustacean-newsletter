@@ -71,7 +71,7 @@ impl Application {
         // Create a Redis session store
         let session_config = SessionConfig::new();
         let session_store =
-            SessionStore::<SessionRedisPool>::new(Some(redis.into()), session_config);
+            SessionStore::<SessionRedisPool>::new(Some(redis.into()), session_config).await.unwrap();
 
         // Build an email client
         let email_client = configuration.email_client.client();
