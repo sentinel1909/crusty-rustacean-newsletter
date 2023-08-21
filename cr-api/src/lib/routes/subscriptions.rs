@@ -115,8 +115,12 @@ pub async fn send_confirmation_email(
     );
 
     let html_body = &format!(
-        "Welcome to the Crusty Rustacean newsletter!<br />
-        Click <a href=\"{}\">here</a> to confirm your subscription.",
+        "<h1>Crusty Rustacean - The Newsletter</h1>
+        <h2>A source for all things Rust</h2>
+        <h3>Mostly once a month...mostly...</h3>
+        <p>Welcome!</p>
+        <p>Click <a href=\"{}\">here</a> to confirm your subscription.</p>
+        <p>After clicking, a confirmation page will come up to confirm.",
         confirmation_link
     );
 
