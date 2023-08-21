@@ -33,6 +33,8 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends openssl ca-c
 
 COPY --from=builder /app/target/release/cr-api cr-api
 
+COPY cr-api/assets assets
+
 COPY cr-api/configuration configuration
 
 ENV APP_ENVIRONMENT production
