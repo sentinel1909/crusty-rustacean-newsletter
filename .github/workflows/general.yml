@@ -5,13 +5,13 @@ on:
     branches:
       - main
   pull_request:
-    types: [ opened, synchronize, reopened ]
+    types: [opened, synchronize, reopened]
     branches:
       - main
 
 env:
   CARGO_TERM_COLOR: always
-  SQLX_VERSION: 0.6.2
+  SQLX_VERSION: 0.7.1
   SQLX_FEATURES: "rustls,postgres"
 
 jobs:
@@ -38,12 +38,11 @@ jobs:
         with:
           key: sqlx-${{ env.SQLX_VERSION }}
       - name: Install sqlx-cli
-        run:
-            cargo install sqlx-cli
-            --version=${{ env.SQLX_VERSION }}
-            --features ${{ env.SQLX_FEATURES }}
-            --no-default-features
-            --locked
+        run: cargo install sqlx-cli
+          --version=${{ env.SQLX_VERSION }}
+          --features ${{ env.SQLX_FEATURES }}
+          --no-default-features
+          --locked
       - name: Migrate database
         run: |
           sudo apt-get install libpq-dev -y
@@ -86,12 +85,11 @@ jobs:
         with:
           key: sqlx-${{ env.SQLX_VERSION }}
       - name: Install sqlx-cli
-        run:
-          cargo install sqlx-cli
-            --version=${{ env.SQLX_VERSION }}
-            --features ${{ env.SQLX_FEATURES }}
-            --no-default-features
-            --locked
+        run: cargo install sqlx-cli
+          --version=${{ env.SQLX_VERSION }}
+          --features ${{ env.SQLX_FEATURES }}
+          --no-default-features
+          --locked
       - name: Migrate database
         run: |
           sudo apt-get install libpq-dev -y
@@ -127,8 +125,7 @@ jobs:
       - name: Install tarpaulin
         run: cargo install cargo-tarpaulin
       - name: Install sqlx-cli
-        run:
-          cargo install sqlx-cli
+        run: cargo install sqlx-cli
           --version=${{ env.SQLX_VERSION }}
           --features ${{ env.SQLX_FEATURES }}
           --no-default-features
