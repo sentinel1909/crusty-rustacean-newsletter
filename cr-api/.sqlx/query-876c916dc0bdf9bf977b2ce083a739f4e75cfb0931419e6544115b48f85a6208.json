@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        DELETE FROM idempotency\n        WHERE\n            created_at < now()\n             - interval '5 days'\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "876c916dc0bdf9bf977b2ce083a739f4e75cfb0931419e6544115b48f85a6208"
+}
