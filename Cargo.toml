@@ -3,5 +3,7 @@ members = [
   "cr-api",
   "project-init"
 ]
+
+resolver = "2"
 default-members = ["cr-api"]
 

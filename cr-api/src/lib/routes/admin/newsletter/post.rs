@@ -14,7 +14,7 @@ use axum::{
 };
 use axum_flash::Flash;
 use serde::Deserialize;
-use sqlx::{Postgres, Transaction};
+use sqlx::{Executor, Postgres, Transaction};
 use uuid::Uuid;
 use validator::Validate;
 
@@ -42,7 +42,7 @@ async fn insert_newsletter_issue(
     html_content: &str,
 ) -> Result<Uuid, sqlx::Error> {
     let newsletter_issue_id = Uuid::new_v4();
-    sqlx::query!(
+    let query = sqlx::query!(
         r#"
         INSERT INTO newsletter_issues (
             newsletter_issue_id,
@@ -57,9 +57,8 @@ async fn insert_newsletter_issue(
         title,
         text_content,
         html_content
-    )
-    .execute(transaction)
-    .await?;
+    );
+    transaction.execute(query).await?;
     Ok(newsletter_issue_id)
 }
 
@@ -69,7 +68,7 @@ async fn enqueue_delivery_tasks(
     transaction: &mut Transaction<'_, Postgres>,
     newsletter_issue_id: Uuid,
 ) -> Result<(), sqlx::Error> {
-    sqlx::query!(
+    let query = sqlx::query!(
         r#"
         INSERT INTO issue_delivery_queue (
             newsletter_issue_id,
@@ -80,9 +79,8 @@ async fn enqueue_delivery_tasks(
         WHERE status = 'confirmed'
         "#,
         newsletter_issue_id,
-    )
-    .execute(transaction)
-    .await?;
+    );
+    transaction.execute(query).await?;
     Ok(())
 }
 
