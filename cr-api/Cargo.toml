@@ -28,7 +28,7 @@ axum = { version = "0.6.20", features = [ "form", "headers", "macros" ] }
 axum-flash = "0.7.0"
 axum-extra = "0.8.0"
 axum-macros = "0.3.7"
-axum_session = {version = "0.6.1", features = [ "redis-db" ], default-features = false }
+axum_session = {version = "0.7.0", features = [ "redis-db" ], default-features = false }
 base64 = "0.21"
 chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
 config = "0.13.3"
