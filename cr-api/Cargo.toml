@@ -1,6 +1,6 @@
 [package]
 name = "cr-api"
-version = "0.11.16"
+version = "1.12.23"
 authors = ["Jeffery D. Mitchell", "<sentinel1909@protonmail.com>"]
 edition = "2021"
 description = "API for the Crusty Rustacean Blog"
