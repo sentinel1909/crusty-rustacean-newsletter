@@ -1,4 +1,4 @@
-// src/lib/state.rs
+// cr-api/src/lib/state.rs
 
 // everything related to state, including associated types and implementations
 
@@ -13,6 +13,7 @@ use sqlx::PgPool;
 #[derive(Debug, Clone)]
 pub struct ApplicationBaseUrl(pub String);
 
+// strut for the Hmac Secret
 #[derive(Debug, Clone)]
 pub struct HmacSecret(pub Secret<String>);
 
