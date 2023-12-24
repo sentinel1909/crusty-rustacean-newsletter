@@ -14,55 +14,38 @@ use crate::routes::{
 use crate::state::AppState;
 use crate::state::ApplicationBaseUrl;
 use crate::state::HmacSecret;
+use crate::telemetry::MakeRequestUuid;
+use anyhow::{Context, Error, Result};
 use axum::{
-    http::Request,
     middleware,
-    routing::{get, post, IntoMakeService},
-    Router, Server,
+    routing::{get, post},
+    serve, Router,
 };
 use axum_session::{SessionConfig, SessionLayer, SessionRedisPool, SessionStore};
-use hyper::server::conn::AddrIncoming;
 use redis_pool::RedisPool;
 use secrecy::{ExposeSecret, Secret};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
-use std::net::TcpListener;
+use tokio::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::{
-    request_id::{MakeRequestId, RequestId},
     services::ServeDir,
     trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
     ServiceBuilderExt,
 };
 use tracing::Level;
-use uuid::Uuid;
-
-// type declaration for the AppServer type
-pub type AppServer = Server<AddrIncoming, IntoMakeService<Router>>;
-
-// a struct to represent a RequestUuid
-#[derive(Clone)]
-struct MakeRequestUuid;
-
-// implementation clock to create a RequestId
-impl MakeRequestId for MakeRequestUuid {
-    fn make_request_id<B>(&mut self, _: &Request<B>) -> Option<RequestId> {
-        let request_id = Uuid::new_v4().to_string();
-
-        Some(RequestId::new(request_id.parse().unwrap()))
-    }
-}
 
 // struct for an Application type
 pub struct Application {
     port: u16,
-    app: AppServer,
+    listener: TcpListener,
+    app: Router,
 }
 
 // implementation block to create an instance of an Application
 impl Application {
     // function to build a new application instance
-    pub async fn build(configuration: Settings) -> Result<Self, anyhow::Error> {
+    pub async fn build(configuration: Settings) -> Result<Self, Error> {
         // Get database pool
         let connection_pool = get_connection_pool(&configuration.database);
 
@@ -73,9 +56,7 @@ impl Application {
         // Create a Redis session store
         let session_config = SessionConfig::new();
         let session_store =
-            SessionStore::<SessionRedisPool>::new(Some(redis_pool.into()), session_config)
-                .await
-                .unwrap();
+            SessionStore::<SessionRedisPool>::new(Some(redis_pool.into()), session_config).await?;
 
         // Build an email client
         let email_client = configuration.email_client.client();
@@ -84,21 +65,25 @@ impl Application {
             "{}:{}",
             configuration.application.host, configuration.application.port
         );
-        let listener = match TcpListener::bind(address) {
-            Ok(listener) => listener,
-            Err(error) => panic!("Could not get a listener - {}", error),
-        };
-        let port = listener.local_addr().unwrap().port();
-        let app = run(
-            listener,
+        let listener = TcpListener::bind(address)
+            .await
+            .context("Unable to get a TCP listener...")?;
+        let port = listener.local_addr()?.port();
+        let app = create(
             connection_pool,
             email_client,
             configuration.application.base_url,
             configuration.application.hmac_secret,
             session_store,
-        );
+        )
+        .await
+        .context("Failed to create the application...")?;
 
-        Ok(Self { port, app })
+        Ok(Self {
+            port,
+            listener,
+            app,
+        })
     }
 
     // function to return the port the application is running on
@@ -107,8 +92,11 @@ impl Application {
     }
 
     // function to run the app until stopped
-    pub async fn run_until_stopped(self) -> hyper::Result<()> {
-        self.app.await
+    pub async fn run_until_stopped(self) -> Result<(), Error> {
+        serve(self.listener, self.app)
+            .await
+            .context("Unable to start the app server...")?;
+        Ok(())
     }
 }
 
@@ -120,14 +108,13 @@ pub fn get_connection_pool(configuration: &DatabaseSettings) -> PgPool {
 }
 
 // run function
-pub fn run(
-    listener: TcpListener,
+pub async fn create(
     pool: PgPool,
     email_client: EmailClient,
     base_url: String,
     hmac_secret: Secret<String>,
     session_store: SessionStore<SessionRedisPool>,
-) -> AppServer {
+) -> Result<Router, Error> {
     // build the app state
     let app_state = AppState::create_state(
         pool,
@@ -182,7 +169,5 @@ pub fn run(
         .nest_service("/assets", ServeDir::new("assets"));
 
     // pass back the built server
-    axum::Server::from_tcp(listener)
-        .expect("Failed to create server from listener...")
-        .serve(app.into_make_service())
+    Ok(app)
 }

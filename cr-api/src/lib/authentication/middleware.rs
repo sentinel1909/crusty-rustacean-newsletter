@@ -3,10 +3,10 @@
 // dependencies
 use crate::session_state::TypedSession;
 use axum::{
+    extract::Request,
     middleware::Next,
     response::{IntoResponse, Redirect, Response},
 };
-use http::Request;
 use std::ops::Deref;
 use uuid::Uuid;
 
@@ -31,10 +31,10 @@ impl Deref for UserId {
 }
 
 // reject anonymous users function
-pub async fn reject_anonymous_users<B>(
+pub async fn reject_anonymous_users(
     session: TypedSession,
-    mut request: Request<B>,
-    next: Next<B>,
+    mut request: Request,
+    next: Next,
 ) -> Result<Response, impl IntoResponse> {
     match session.get_user_id() {
         Some(uid) => {
