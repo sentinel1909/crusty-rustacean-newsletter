@@ -658,7 +658,7 @@ dependencies = [
 
 [[package]]
 name = "cr-api"
-version = "2.12.23"
+version = "2.12.25"
 dependencies = [
  "anyhow",
  "argon2",
@@ -2207,7 +2207,7 @@ dependencies = [
 
 [[package]]
 name = "project-init"
-version = "2.12.23"
+version = "2.12.25"
 dependencies = [
  "cmd_lib",
 ]

@@ -1,6 +1,6 @@
 [package]
 name = "project-init"
-version = "2.12.23"
+version = "2.12.25"
 edition = "2021"
 publish = false
 
