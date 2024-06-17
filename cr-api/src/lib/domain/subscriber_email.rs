@@ -3,17 +3,20 @@
 // domain subscriber email type
 
 // dependencies
-use validator::validate_email;
+use validator::{Validate, ValidateEmail};
 
 // a struct to represent a subscriber email type
-#[derive(Debug, Clone)]
-pub struct SubscriberEmail(String);
+#[derive(Debug, Clone, Validate)]
+pub struct SubscriberEmail {
+    #[validate(email)]
+    mail: String,
+}
 
 // impl block for the subscriber email type; contains a method to validate subscriber emails
 impl SubscriberEmail {
     pub fn parse(s: String) -> Result<SubscriberEmail, String> {
-        if validate_email(&s) {
-            Ok(Self(s))
+        if s.validate_email() {
+            Ok(Self { mail: s })
         } else {
             Err(format!("{} is not a valid subscriber email.", s))
         }
@@ -23,7 +26,7 @@ impl SubscriberEmail {
 // impl block to return the inner value of the subscriber email type
 impl AsRef<str> for SubscriberEmail {
     fn as_ref(&self) -> &str {
-        &self.0
+        &self.mail
     }
 }
 
@@ -32,7 +35,7 @@ impl std::fmt::Display for SubscriberEmail {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // We just forward to the Display implementation of
         // the wrapped String.
-        self.0.fmt(f)
+        self.mail.fmt(f)
     }
 }
 

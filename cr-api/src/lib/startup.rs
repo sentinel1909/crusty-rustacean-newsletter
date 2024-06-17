@@ -21,7 +21,8 @@ use axum::{
     routing::{get, post},
     serve, Router,
 };
-use axum_session::{SessionConfig, SessionLayer, SessionRedisPool, SessionStore};
+use axum_session::{SessionConfig, SessionLayer, SessionStore};
+use axum_session_redispool::SessionRedisPool;
 use redis_pool::RedisPool;
 use secrecy::{ExposeSecret, Secret};
 use sqlx::postgres::PgPoolOptions;

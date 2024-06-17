@@ -23,11 +23,12 @@ anyhow = "1"
 argon2 = { version = "0.5.1", features = ["std"] }
 askama = { version = "0.12.0", default-features = false, features = [ "with-axum" ] }
 askama_axum = "0.4.0"
-axum = { version = "0.7.2", features = [ "form", "macros" ] }
+axum = { version = "0.7.5", features = [ "form", "macros" ] }
 axum-flash = "0.8.0"
 axum-extra = "0.9.0"
 axum-macros = "0.4.0"
 axum_session = "0.14.0"
+axum_session_redispool = "0.1.0"
 base64 = "0.22"
 chrono = { version = "0.4.38", default-features = false, features = ["clock"] }
 config = "0.14.0"

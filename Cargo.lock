@@ -360,6 +360,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "axum_session_redispool"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3e9d03f683a04448c8421fef9edf92c756be89511b1c9e1db4172a6b6bab384"
+dependencies = [
+ "async-trait",
+ "axum_session",
+ "redis",
+ "redis_pool",
+]
+
+[[package]]
 name = "backtrace"
 version = "0.3.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -501,9 +513,9 @@ dependencies = [
 
 [[package]]
 name = "cmd_lib"
-version = "1.9.3"
+version = "1.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5f4cbdcab51ca635c5b19c85ece4072ea42e0d2360242826a6fc96fb11f0d40"
+checksum = "718f77610af91e4d648fe9da0150ae58698cbcfb93bf63e764907fbefd56ffe8"
 dependencies = [
  "cmd_lib_macros",
  "env_logger 0.10.1",
@@ -515,9 +527,9 @@ dependencies = [
 
 [[package]]
 name = "cmd_lib_macros"
-version = "1.9.3"
+version = "1.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae881960f7e2a409f91ef0b1c09558cf293031a1d6e8b45f908311f2a43f5fdf"
+checksum = "9a80fac05ed12fe97a70b5dfdd910c9b90b53f4de69002c3179e29ac2d066abc"
 dependencies = [
  "proc-macro-error",
  "proc-macro2",
@@ -677,6 +689,7 @@ dependencies = [
  "axum-flash",
  "axum-macros",
  "axum_session",
+ "axum_session_redispool",
  "base64 0.22.0",
  "chrono",
  "claims",

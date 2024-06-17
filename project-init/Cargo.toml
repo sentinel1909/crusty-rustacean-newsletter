@@ -5,4 +5,4 @@ edition = "2021"
 publish = false
 
 [dependencies]
-cmd_lib = "1.9.3"
+cmd_lib = "1.9.4"

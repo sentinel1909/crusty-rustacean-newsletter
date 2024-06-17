@@ -1,7 +1,8 @@
 // src/lib/session_state.rs
 
 use axum_macros::FromRequestParts;
-use axum_session::{Session, SessionRedisPool};
+use axum_session::Session;
+use axum_session_redispool::SessionRedisPool;
 use uuid::Uuid;
 
 #[derive(Debug, FromRequestParts)]
