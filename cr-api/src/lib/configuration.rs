@@ -1,19 +1,18 @@
-//! src/lib/configuration.rs
+// src/lib/configuration.rs
 
-// dependencies, internal and external
+// dependencies
 use crate::domain::SubscriberEmail;
 use crate::email_client::EmailClient;
-use secrecy::{ExposeSecret, Secret};
+use confik::{Configuration, EnvSource, Error, FileSource};
 use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
 use sqlx::{
     postgres::{PgConnectOptions, PgSslMode},
     ConnectOptions,
 };
-use std::u16;
 
 // a struct to hold a type for settings
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Configuration)]
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
@@ -22,27 +21,30 @@ pub struct Settings {
 }
 
 // a struct to hold a type for the Redis related settings
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Configuration)]
 pub struct RedisSettings {
-    pub uri: Secret<String>,
+    #[confik(secret)]
+    pub uri: String,
 }
 
 // a struct to hold a type for application settings
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Configuration)]
 pub struct ApplicationSettings {
     #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
     pub host: String,
     pub base_url: String,
-    pub hmac_secret: Secret<String>,
+    #[confik(secret)]
+    pub hmac_secret: String,
 }
 
 // a struct to hold a type for email client settings
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Configuration)]
 pub struct EmailClientSettings {
     pub base_url: String,
     pub sender_email: String,
-    pub authorization_token: Secret<String>,
+    #[confik(secret)]
+    pub authorization_token: String,
     pub timeout_milliseconds: u64,
 }
 
@@ -54,7 +56,7 @@ impl EmailClientSettings {
         EmailClient::new(
             self.base_url,
             sender_email,
-            self.authorization_token,
+            self.authorization_token.into(),
             timeout,
         )
     }
@@ -69,10 +71,11 @@ impl EmailClientSettings {
 }
 
 // a struct to hold a type for database settings
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Configuration)]
 pub struct DatabaseSettings {
     pub username: String,
-    pub password: Secret<String>,
+    #[confik(secret)]
+    pub password: String,
     #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
     pub host: String,
@@ -99,7 +102,7 @@ impl DatabaseSettings {
         PgConnectOptions::new()
             .host(&self.host)
             .username(&self.username)
-            .password(self.password.expose_secret())
+            .password(self.password.as_str())
             .port(self.port)
             .ssl_mode(ssl_mode)
     }
@@ -138,7 +141,7 @@ Use either `local` or `production`.",
 }
 
 // function to read in values from the configuration files
-pub fn get_configuration() -> Result<Settings, config::ConfigError> {
+pub fn get_configuration() -> Result<Settings, Error> {
     let base_path = std::env::current_dir().expect("Failed to determine the current directory");
     let configuration_directory = base_path.join("configuration");
     // Detect the running environment.
@@ -147,19 +150,18 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
         .unwrap_or_else(|_| "local".into())
         .try_into()
         .expect("Failed to parse APP_ENVIRONMENT.");
-    let environment_filename = format!("{}.yaml", environment.as_str());
-    let settings = config::Config::builder()
-        .add_source(config::File::from(
-            configuration_directory.join("base.yaml"),
-        ))
-        .add_source(config::File::from(
-            configuration_directory.join(environment_filename),
-        ))
-        .add_source(
-            config::Environment::with_prefix("APP")
-                .prefix_separator("_")
-                .separator("__"),
+    let environment_filename = format!("{}.toml", environment.as_str());
+    let settings = Settings::builder()
+        .override_with(FileSource::new(configuration_directory.join("base.toml")).allow_secrets())
+        .override_with(
+            FileSource::new(configuration_directory.join(environment_filename)).allow_secrets(),
         )
-        .build()?;
-    settings.try_deserialize::<Settings>()
+        .override_with(
+            EnvSource::new()
+                .with_prefix("APP")
+                .with_separator("_")
+                .with_separator("__"),
+        )
+        .try_build()?;
+    Ok(settings)
 }
