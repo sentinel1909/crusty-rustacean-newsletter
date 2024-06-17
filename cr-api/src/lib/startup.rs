@@ -24,7 +24,7 @@ use axum::{
 use axum_session::{SessionConfig, SessionLayer, SessionStore};
 use axum_session_redispool::SessionRedisPool;
 use redis_pool::RedisPool;
-use secrecy::{ExposeSecret, Secret};
+use secrecy::Secret;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use tokio::net::TcpListener;
@@ -51,7 +51,7 @@ impl Application {
         let connection_pool = get_connection_pool(&configuration.database);
 
         // Build a redis connection
-        let redis_client = redis::Client::open(configuration.redis.uri.expose_secret().as_str())?;
+        let redis_client = redis::Client::open(configuration.redis.uri.as_str())?;
         let redis_pool = RedisPool::from(redis_client);
 
         // Create a Redis session store
@@ -74,7 +74,7 @@ impl Application {
             connection_pool,
             email_client,
             configuration.application.base_url,
-            configuration.application.hmac_secret,
+            configuration.application.hmac_secret.into(),
             session_store,
         )
         .await
