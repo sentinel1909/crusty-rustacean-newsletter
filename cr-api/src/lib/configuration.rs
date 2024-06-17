@@ -1,16 +1,15 @@
-//! src/lib/configuration.rs
+// src/lib/configuration.rs
 
-// dependencies, internal and external
-use confik::{Configuration, Error, EnvSource, FileSource};
+// dependencies
 use crate::domain::SubscriberEmail;
 use crate::email_client::EmailClient;
+use confik::{Configuration, EnvSource, Error, FileSource};
 use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
 use sqlx::{
     postgres::{PgConnectOptions, PgSslMode},
     ConnectOptions,
 };
-use std::u16;
 
 // a struct to hold a type for settings
 #[derive(Clone, Deserialize, Configuration)]
@@ -153,14 +152,13 @@ pub fn get_configuration() -> Result<Settings, Error> {
         .expect("Failed to parse APP_ENVIRONMENT.");
     let environment_filename = format!("{}.toml", environment.as_str());
     let settings = Settings::builder()
-        .override_with(FileSource::new(
-            configuration_directory.join("base.toml"),
-        ).allow_secrets())
-        .override_with(FileSource::new(
-            configuration_directory.join(environment_filename),
-        ).allow_secrets())
+        .override_with(FileSource::new(configuration_directory.join("base.toml")).allow_secrets())
         .override_with(
-            EnvSource::new().with_prefix("APP")
+            FileSource::new(configuration_directory.join(environment_filename)).allow_secrets(),
+        )
+        .override_with(
+            EnvSource::new()
+                .with_prefix("APP")
                 .with_separator("_")
                 .with_separator("__"),
         )
