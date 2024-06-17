@@ -1,7 +1,7 @@
 [package]
 name = "cr-api"
 version = "2.12.25"
-authors = ["Jeffery D. Mitchell", "<sentinel1909@protonmail.com>"]
+authors = ["Jeffery D. Mitchell", "<sentinel1909@jeff-mitchell.dev>"]
 edition = "2021"
 description = "API for the Crusty Rustacean Blog"
 readme = "README.md"
@@ -27,16 +27,16 @@ axum = { version = "0.7.2", features = [ "form", "macros" ] }
 axum-flash = "0.8.0"
 axum-extra = "0.9.0"
 axum-macros = "0.4.0"
-axum_session = {version = "0.13.0", features = [ "redis-db" ], default-features = false }
+axum_session = "0.14.0"
 base64 = "0.22"
-chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
+chrono = { version = "0.4.38", default-features = false, features = ["clock"] }
 config = "0.14.0"
 http = "1.0.0"
-hyper = "1.1.0"
-once_cell = "1.17.1"
+hyper = "1.3.1"
+once_cell = "1.13.0"
 rand = { version = "0.8", features = [ "std_rng" ]}
 redis = { version = "0.25.2", features = [ "tokio-comp" ]}
-redis_pool = "0.3.0"
+redis_pool = "0.4.0"
 reqwest = { version = "0.12.2", default-features = false, features = [ "json", "rustls-tls", "cookies" ]}
 secrecy = { version = "0.8", features = [ "serde"] }
 serde = { version = "1.0.152", features = ["derive"] }
@@ -54,7 +54,7 @@ tracing-log = "0.2.0"
 tracing-subscriber = { version = "0.3.16", features = [ "registry", "env-filter"] }
 unicode-segmentation = "1"
 uuid = { version = "1", features = ["v4", "serde"] }
-validator = { version = "0.17.0", features = [ "derive" ] }
+validator = { version = "0.18.1", features = [ "derive" ] }
 http-body-util = "0.1.0"
 
 [dev-dependencies]
