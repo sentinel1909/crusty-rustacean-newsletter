@@ -7,7 +7,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use http_body_util::BodyExt;
-use sqlx::{postgres::PgHasArrayType, PgPool, Postgres, Transaction};
+use sqlx::{PgPool, Postgres, Transaction};
 use uuid::Uuid;
 
 // strut to represent our custom HeaderPairRecord for sqlx
@@ -18,12 +18,13 @@ struct HeaderPairRecord {
     value: Vec<u8>,
 }
 
+// 2024-08-04: removed to resolve error regarding duplicate implementations of PgHasArrayType
 // implement PgHasArrayType for our HeaderPairRecord struct
-impl PgHasArrayType for HeaderPairRecord {
-    fn array_type_info() -> sqlx::postgres::PgTypeInfo {
-        sqlx::postgres::PgTypeInfo::with_name("_header_pair")
-    }
-}
+// impl PgHasArrayType for HeaderPairRecord {
+//    fn array_type_info() -> sqlx::postgres::PgTypeInfo {
+//        sqlx::postgres::PgTypeInfo::with_name("_header_pair")
+//    }
+//}
 
 #[allow(clippy::large_enum_variant)]
 pub enum NextAction {

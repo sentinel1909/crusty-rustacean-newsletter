@@ -1,9 +1,9 @@
 [package]
 name = "cr-api"
-version = "2024.6.16"
+version = "2024.8.4"
 authors = ["Jeffery D. Mitchell", "<sentinel1909@jeff-mitchell.dev>"]
 edition = "2021"
-description = "API for the Crusty Rustacean Blog"
+description = "Backend for the Crusty Rustacean Newsletter"
 readme = "README.md"
 repository = "https://github.com/sentinel1909/crusty-rustacean-api"
 license = "MIT"
@@ -29,16 +29,16 @@ axum-flash = "0.8.0"
 axum-extra = "0.9.0"
 axum-macros = "0.4.0"
 axum_session = "0.14.0"
-axum_session_redispool = "0.1.0"
+axum_session_redispool = "0.2.0"
 base64 = "0.22"
 chrono = { version = "0.4.38", default-features = false, features = ["clock"] }
 confik = { version = "0.11.7", features = [ "env" ] }
-http = "1.0.0"
-hyper = "1.3.1"
+http = "1.1.0"
+hyper = "1.4.1"
 once_cell = "1.13.0"
 rand = { version = "0.8", features = [ "std_rng" ]}
-redis = { version = "0.25.2", features = [ "tokio-comp" ]}
-redis_pool = "0.4.0"
+redis = { version = "0.26.1", features = [ "tokio-comp" ]}
+redis_pool = "0.5.0"
 reqwest = { version = "0.12.2", default-features = false, features = [ "json", "rustls-tls", "cookies" ]}
 secrecy = { version = "0.8", features = [ "serde"] }
 serde = { version = "1.0.152", features = ["derive"] }
@@ -47,7 +47,7 @@ serde_json = "1"
 serde_urlencoded = "0.7.1"
 sqlx = { version = "0.8.0", default-features = false, features = [ "runtime-tokio-native-tls", "macros", "postgres", "uuid", "chrono", "migrate" ]}
 thiserror = "1"
-tokio = { version = "1.38.0", features = [ "macros", "rt-multi-thread" ]}
+tokio = { version = "1", features = [ "macros", "rt-multi-thread" ]}
 tower = "0.4.13"
 tower-http = { version = "0.5.0", features = [ "trace", "request-id", "util", "fs" ] }
 tracing = { version = "0.1.37", features = [ "log" ] }
@@ -57,7 +57,7 @@ tracing-subscriber = { version = "0.3.16", features = [ "registry", "env-filter"
 unicode-segmentation = "1"
 uuid = { version = "1", features = ["v4", "serde"] }
 validator = { version = "0.18.1", features = [ "derive" ] }
-http-body-util = "0.1.0"
+http-body-util = "0.1.2"
 
 [dev-dependencies]
 claims = "0.7.1"

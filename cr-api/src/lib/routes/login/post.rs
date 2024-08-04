@@ -41,7 +41,7 @@ pub async fn login(
     // check the users credentials, allow them through into the admin dashboard if they're validated, create a session for this user
     let response = match validate_credentials(credentials, &app_state.db_pool).await {
         Ok(user_id) => {
-            tracing::Span::current().record("user_id", &tracing::field::display(&user_id));
+            tracing::Span::current().record("user_id", tracing::field::display(&user_id));
             session.renew();
             session.insert_user_id(user_id);
             Redirect::to("/admin/dashboard").into_response()
